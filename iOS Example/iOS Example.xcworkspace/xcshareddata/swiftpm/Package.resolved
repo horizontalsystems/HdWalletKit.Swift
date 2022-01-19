@@ -1,0 +1,25 @@
+{
+  "object": {
+    "pins": [
+      {
+        "package": "OpenSSLKit",
+        "repositoryURL": "https://github.com/horizontalsystems/OpenSSLKit.git",
+        "state": {
+          "branch": null,
+          "revision": "72f9e68eb70458c987d0225c69ff0a1b4371a5f1",
+          "version": "1.0.0"
+        }
+      },
+      {
+        "package": "secp256k1",
+        "repositoryURL": "https://github.com/GigaBitcoin/secp256k1.swift.git",
+        "state": {
+          "branch": null,
+          "revision": "1b51af7a33bace2cad119aaf198edf4c421ffdae",
+          "version": "0.3.4"
+        }
+      }
+    ]
+  },
+  "version": 1
+}
