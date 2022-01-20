@@ -1,0 +1,16 @@
+{
+  "object": {
+    "pins": [
+      {
+        "package": "OpenSSLKit",
+        "repositoryURL": "https://github.com/horizontalsystems/OpenSSLKit.git",
+        "state": {
+          "branch": null,
+          "revision": "72f9e68eb70458c987d0225c69ff0a1b4371a5f1",
+          "version": "1.0.0"
+        }
+      }
+    ]
+  },
+  "version": 1
+}

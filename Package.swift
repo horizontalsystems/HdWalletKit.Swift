@@ -14,7 +14,7 @@ let package = Package(
     ],
     dependencies: [
         .package(name: "OpenSSLKit", url: "https://github.com/horizontalsystems/OpenSSLKit.git", .upToNextMajor(from: "1.0.0")),
-        .package(name: "secp256k1", url: "https://github.com/GigaBitcoin/secp256k1.swift.git", .upToNextMajor(from: "0.3.4"))
+        .package(name: "secp256k1", url: "https://github.com/horizontalsystems/secp256k1.swift.git", .upToNextMajor(from: "0.3.5"))
     ],
     targets: [
         .target(
