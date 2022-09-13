@@ -13,12 +13,18 @@ let package = Package(
             targets: ["HdWalletKit"]),
     ],
     dependencies: [
-        .package(name: "OpenSSLKit", url: "https://github.com/horizontalsystems/OpenSSLKit.git", .upToNextMajor(from: "1.0.0")),
-        .package(name: "secp256k1", url: "https://github.com/horizontalsystems/secp256k1.swift.git", .upToNextMajor(from: "0.3.5"))
+        .package(url: "https://github.com/apple/swift-crypto.git", "1.0.0" ..< "3.0.0"),
+        .package(url: "https://github.com/GigaBitcoin/secp256k1.swift.git", .upToNextMajor(from: "0.8.1")),
+        .package(url: "https://github.com/attaswift/BigInt.git", from: "5.3.0"),
     ],
     targets: [
         .target(
             name: "HdWalletKit",
-            dependencies: ["OpenSSLKit", "secp256k1"]),
+            dependencies: [
+                .product(name: "Crypto", package: "swift-crypto"),
+                .product(name: "_CryptoExtras", package: "swift-crypto"),
+                .product(name: "secp256k1", package: "secp256k1.swift"),
+                "BigInt",
+            ]),
     ]
 )

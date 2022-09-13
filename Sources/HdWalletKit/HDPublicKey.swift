@@ -1,6 +1,7 @@
 import Foundation
-import OpenSSL
+import CryptoKit
 import secp256k1
+import secp256k1_bindings
 
 public class HDPublicKey {
     let xPubKey: UInt32
@@ -40,32 +41,64 @@ public class HDPublicKey {
 
     func extended() -> String {
         var data = Data()
-        data += xPubKey.bigEndian
-        data += depth.littleEndian
-        data += fingerprint.littleEndian
-        data += childIndex.littleEndian
+        data += xPubKey.bigEndian.data
+        data += Data([depth])
+        data += fingerprint.littleEndian.data
+        data += childIndex.littleEndian.data
         data += chainCode
         data += raw
-        let checksum = Kit.sha256sha256(data).prefix(4)
+        let checksum = Crypto.doubleSha256(data).prefix(4)
         return Base58.encode(data + checksum)
     }
 
-    func derived(at index: UInt32) throws -> HDPublicKey {
-        // As we use explicit parameter "hardened", do not allow higher bit set.
-        if ((0x80000000 & index) != 0) {
-            fatalError("invalid child index")
-        }
-        guard let derivedKey = Kit.derivedHDKey(hdKey: HDKey(privateKey: nil, publicKey: raw, chainCode: chainCode, depth: depth, fingerprint: fingerprint, childIndex: childIndex), at: index, hardened: false) else {
-            throw DerivationError.derivateionFailed
-        }
-        return HDPublicKey(raw: derivedKey.publicKey!, chainCode: derivedKey.chainCode, xPubKey: xPubKey, depth: derivedKey.depth, fingerprint: derivedKey.fingerprint, childIndex: derivedKey.childIndex)
+    public func derived(at index: UInt32) -> HDPublicKey {
+        let edge: UInt32 = 0x80000000
+        guard (edge & index) == 0 else { fatalError("Invalid child index") }
+
+        var data = Data()
+        data += raw
+
+        let derivingIndex = CFSwapInt32BigToHost(index)
+        data += derivingIndex.data
+
+        let digest = Crypto.hmacSha512(data, key: chainCode)
+        let factor = digest[0..<32]
+
+        print("==> ==> PublicKey : \(raw.hex)")
+        let publicKey = try! secp256k1.KeyAgreement.PublicKey(rawRepresentation: raw, format: .compressed)
+        print(publicKey.xonly.rawRepresentation.hex)
+
+//        let curveOrder = BigInt("FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFEBAAEDCE6AF48A03BBFD25E8CD0364141", radix: 16)!
+//        let derivedPrivateKey = ((BigInt(raw) + factor) % curveOrder).serialize() //todo: Check endian style
+        let derivedChainCode = digest[32..<64]
+
+        let fingerprint = raw[0..<4].uint32
+
+        return HDPublicKey(
+                raw: factor,
+                chainCode: derivedChainCode,
+                xPubKey: xPubKey,
+                depth: depth + 1,
+                fingerprint: fingerprint,
+                childIndex: derivingIndex
+        )
     }
 
+//    public func derived(at index: UInt32) throws -> HDPublicKey {
+//        // As we use explicit parameter "hardened", do not allow higher bit set.
+//        if ((0x80000000 & index) != 0) {
+//            fatalError("invalid child index")
+//        }
+//
+////        guard let derivedKey = Kit.derivedHDKey(hdKey: HDKey(privateKey: nil, publicKey: raw, chainCode: chainCode, depth: depth, fingerprint: fingerprint, childIndex: childIndex), at: index, hardened: false) else {
+////            throw DerivationError.derivationFailed
+////        }
+//
+//        return HDPublicKey(raw: Data(), chainCode: Data(), xPubKey: xPubKey, depth: 0, fingerprint: 0, childIndex: 0)
+//    }
+
     static func from(privateKey raw: Data, compression: Bool = false) -> Data {
-        return secp256k1
-                .Signing
-                .PublicKey(rawRepresentation: raw, format: compression ? .compressed : .uncompressed)
-                .rawRepresentation
+        Crypto.publicKey(privateKey: raw, compressed: compression)
     }
 
 }
