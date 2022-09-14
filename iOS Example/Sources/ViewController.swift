@@ -11,30 +11,45 @@ class ViewController: UIViewController {
         print("==> Seed: \(seed.hex)")
 
         let hdWallet = HDWallet(seed: seed, coinType: 0, xPrivKey: 0x0488ade4, xPubKey: 0x0488b21e)
-
         do {
             let privateKey = try hdWallet.privateKey(account: 0, index: 44, chain: .internal)
-            generateAndCheckPublicKeys(privateKey: privateKey)
+            print("==> HD Private key: \(privateKey.raw.hex)")
+            print("==> HD Public key: \(privateKey.publicKey(compressed: true).raw.hex)")
+
+            print("========== Generate and check PublickKeys ===============")
+            try generateAndCheckPublicKeys(privateKey: privateKey)
+            print()
+            print("=======================================================")
+            try derivedNonHardenedPublicKeys(privateKey: privateKey)
         } catch {
             print("Can't get private key!")
         }
     }
 
-    func generateAndCheckPublicKeys(privateKey: HDPrivateKey) {
-        print("==> Private key: \(privateKey.raw.hex)")
-        print("==> Public key: \(privateKey.publicKey(compressed: true).raw.hex)")
+    func generateAndCheckPublicKeys(privateKey: HDPrivateKey) throws {
         var last = privateKey
-        for i in 0..<5 {
+        for i in 0..<20 {
             print("================= \(i) ===================")
-            let privKey = last.derived(at: UInt32(i), hardened: false)
+            let privKey = try last.derived(at: UInt32(i), hardened: false)
 
             print("==> Private key: \(privKey.raw.hex)")
-            print("==> Public key: \(privKey.publicKey(compressed: true).raw.hex)")
-            let pubKey = last.publicKey()
-            print("==> DerivedPublic key: \(pubKey.derived(at: UInt32(i)).raw.hex)")
-            last = privKey
-        }
+            print("==> Public key: \(privKey.publicKey(compressed: true).description)")
 
+            let pubKey = last.publicKey()
+            print("==> DerivedPublic key: \(try pubKey.derived(at: UInt32(i)).description)")
+        }
+    }
+
+    func derivedNonHardenedPublicKeys(privateKey: HDPrivateKey) throws {
+        do {
+            let keys = try privateKey.derivedNonHardenedPublicKeys(at: 0..<5)
+            keys.enumerated().forEach { index, key in
+                print("==> \(index) ==> Public key: \(key.description)")
+            }
+        } catch {
+            print("Can't get private key!")
+            return
+        }
     }
 
 }

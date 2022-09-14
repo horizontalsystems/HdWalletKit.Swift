@@ -14,16 +14,16 @@ public class HDPublicKey {
 
     init(privateKey: HDPrivateKey, xPubKey: UInt32, compressed: Bool = true) {
         self.xPubKey = xPubKey
-        self.raw = HDPublicKey.from(privateKey: privateKey.raw, compression: compressed)
-        self.chainCode = privateKey.chainCode
-        self.depth = 0
-        self.fingerprint = 0
-        self.childIndex = 0
+        raw = HDPublicKey.from(privateKey: privateKey.raw, compression: compressed)
+        chainCode = privateKey.chainCode
+        depth = 0
+        fingerprint = 0
+        childIndex = 0
     }
 
     init(privateKey: HDPrivateKey, chainCode: Data, xPubKey: UInt32, depth: UInt8, fingerprint: UInt32, childIndex: UInt32, compressed: Bool) {
         self.xPubKey = xPubKey
-        self.raw = HDPublicKey.from(privateKey: privateKey.raw, compression: compressed)
+        raw = HDPublicKey.from(privateKey: privateKey.raw, compression: compressed)
         self.chainCode = chainCode
         self.depth = depth
         self.fingerprint = fingerprint
@@ -51,9 +51,11 @@ public class HDPublicKey {
         return Base58.encode(data + checksum)
     }
 
-    public func derived(at index: UInt32) -> HDPublicKey {
+    public func derived(at index: UInt32) throws -> HDPublicKey {
         let edge: UInt32 = 0x80000000
-        guard (edge & index) == 0 else { fatalError("Invalid child index") }
+        guard (edge & index) == 0 else {
+            throw DerivationError.invalidChildIndex
+        }
 
         var data = Data()
         data += raw
@@ -61,21 +63,61 @@ public class HDPublicKey {
         let derivingIndex = CFSwapInt32BigToHost(index)
         data += derivingIndex.data
 
+        // Get HMAC result for (Parent + Index) and ChainCode
         let digest = Crypto.hmacSha512(data, key: chainCode)
-        let factor = digest[0..<32]
 
-        print("==> ==> PublicKey : \(raw.hex)")
-        let publicKey = try! secp256k1.KeyAgreement.PublicKey(rawRepresentation: raw, format: .compressed)
-        print(publicKey.xonly.rawRepresentation.hex)
-
-//        let curveOrder = BigInt("FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFEBAAEDCE6AF48A03BBFD25E8CD0364141", radix: 16)!
-//        let derivedPrivateKey = ((BigInt(raw) + factor) % curveOrder).serialize() //todo: Check endian style
+        let hmacPrivateKey = digest[0..<32]
         let derivedChainCode = digest[32..<64]
 
-        let fingerprint = raw[0..<4].uint32
+        let hash = Crypto.ripeMd160Sha256(raw)
+        let fingerprint = hash[0..<4].uint32
+
+        let context = secp256k1_context_create(UInt32(SECP256K1_CONTEXT_SIGN|SECP256K1_CONTEXT_VERIFY))!
+
+        // Convert HMAC left side to Point, and combine with Parent PublicKey(Parent Point).
+        var hmacPoint = secp256k1_pubkey()
+        if hmacPrivateKey.withUnsafeBytes({ (privateKeyPointer: UnsafePointer<UInt8>) -> Int32 in
+            secp256k1_ec_pubkey_create(context, UnsafeMutablePointer<secp256k1_pubkey>(&hmacPoint), privateKeyPointer)
+        }) == 0 {
+            throw DerivationError.invalidHmacToPoint
+        }
+
+        var parentPoint = secp256k1_pubkey()
+        if raw.withUnsafeBytes({ (serializedKeyPointer: UnsafePointer<UInt8>) -> Int32 in
+            secp256k1_ec_pubkey_parse(context, UnsafeMutablePointer<secp256k1_pubkey>(&parentPoint), serializedKeyPointer, raw.count)
+        }) == 0 {
+            throw DerivationError.invalidRawToPoint
+        }
+
+        var storage = ContiguousArray<secp256k1_pubkey>()
+        let pointers = UnsafeMutablePointer< UnsafePointer<secp256k1_pubkey>? >.allocate(capacity: 2)
+        defer {
+            pointers.deinitialize(count: 2)
+            pointers.deallocate()
+            secp256k1_context_destroy(context)
+        }
+        storage.append(parentPoint)
+        storage.append(hmacPoint)
+
+        for i in 0 ..< 2 {
+            withUnsafePointer(to: &storage[i]) { (ptr) -> Void in
+                pointers.advanced(by: i).pointee = ptr
+            }
+        }
+        let immutablePointer = UnsafePointer(pointers)
+
+        // Combine to points to found new point (new public Key)
+        var publicKey = secp256k1_pubkey()
+        if withUnsafeMutablePointer(to: &publicKey, { (pubKeyPtr: UnsafeMutablePointer<secp256k1_pubkey>) -> Int32 in
+            secp256k1_ec_pubkey_combine(context, pubKeyPtr, immutablePointer, 2)
+        }) == 0 {
+            throw DerivationError.invalidCombinePoints
+        }
+
+        let childPublicKey = Crypto.publicKey(publicKey, compressed: true)
 
         return HDPublicKey(
-                raw: factor,
+                raw: childPublicKey,
                 chainCode: derivedChainCode,
                 xPubKey: xPubKey,
                 depth: depth + 1,
@@ -84,21 +126,16 @@ public class HDPublicKey {
         )
     }
 
-//    public func derived(at index: UInt32) throws -> HDPublicKey {
-//        // As we use explicit parameter "hardened", do not allow higher bit set.
-//        if ((0x80000000 & index) != 0) {
-//            fatalError("invalid child index")
-//        }
-//
-////        guard let derivedKey = Kit.derivedHDKey(hdKey: HDKey(privateKey: nil, publicKey: raw, chainCode: chainCode, depth: depth, fingerprint: fingerprint, childIndex: childIndex), at: index, hardened: false) else {
-////            throw DerivationError.derivationFailed
-////        }
-//
-//        return HDPublicKey(raw: Data(), chainCode: Data(), xPubKey: xPubKey, depth: 0, fingerprint: 0, childIndex: 0)
-//    }
-
     static func from(privateKey raw: Data, compression: Bool = false) -> Data {
         Crypto.publicKey(privateKey: raw, compressed: compression)
+    }
+
+}
+
+extension HDPublicKey {
+
+    public var description: String {
+        "\(raw.hex) ::: \(chainCode.hex) ::: depth: \(depth) - fingerprint: \(fingerprint) - childIndex: \(childIndex)"
     }
 
 }

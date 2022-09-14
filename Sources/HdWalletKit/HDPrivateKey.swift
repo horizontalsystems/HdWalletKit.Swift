@@ -1,6 +1,7 @@
 import Foundation
 import Crypto
-import BigInt
+import secp256k1
+import secp256k1_bindings
 
 public class HDPrivateKey {
     let xPrivKey: UInt32
@@ -52,9 +53,11 @@ public class HDPrivateKey {
         return Base58.encode(data + checksum)
     }
 
-    public func derived(at index: UInt32, hardened: Bool) -> HDPrivateKey {
+    public func derived(at index: UInt32, hardened: Bool) throws -> HDPrivateKey {
         let edge: UInt32 = 0x80000000
-        guard (edge & index) == 0 else { fatalError("Invalid child index") }
+        guard (edge & index) == 0 else {
+            throw DerivationError.invalidChildIndex
+        }
 
         let publicKey = Crypto.publicKey(privateKey: raw, compressed: true)
 
@@ -70,10 +73,21 @@ public class HDPrivateKey {
         data += derivingIndex.data
 
         let digest = Crypto.hmacSha512(data, key: chainCode)
-        let factor = BigUInt(digest[0..<32])
+        let factor = digest[0..<32]
 
-        let curveOrder = BigUInt("FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFEBAAEDCE6AF48A03BBFD25E8CD0364141", radix: 16)!
-        let derivedPrivateKey = ((BigUInt(raw) + factor) % curveOrder).serialize()
+        let context = secp256k1_context_create(UInt32(SECP256K1_CONTEXT_SIGN|SECP256K1_CONTEXT_VERIFY))!
+        defer {
+            secp256k1_context_destroy(context)
+        }
+
+        var privKey = raw.bytes
+        if factor.withUnsafeBytes({ (factorPointer: UnsafePointer<UInt8>) -> Int32 in
+            secp256k1_ec_seckey_tweak_add(context, UnsafeMutablePointer<UInt8>(&privKey), factorPointer)
+        }) == 0 {
+            throw DerivationError.invalidHmacToPoint
+        }
+
+        let derivedPrivateKey = Data(privKey)
         let derivedChainCode = digest[32..<64]
 
         let hash = Crypto.ripeMd160Sha256(publicKey)
@@ -90,34 +104,31 @@ public class HDPrivateKey {
         )
     }
 
-    func derivedNonHardenedPublicKeys(at indices: Range<UInt32>) throws -> [HDPublicKey] {
-        []
-        //todo:
-//        guard let firstIndex = indices.first, let lastIndex = indices.last else {
-//            return []
-//        }
-//
-//        if (0x80000000 & firstIndex) != 0 && (0x80000000 & lastIndex) != 0 {
-//            fatalError("invalid child index")
-//        }
-//
-//        let hdKey = HDKey(privateKey: nil, publicKey: publicKey().raw, chainCode: chainCode, depth: depth, fingerprint: fingerprint, childIndex: childIndex)
-//
-//        var keys = [HDPublicKey]()
-//
-//        for i in indices {
-//            guard let key = Kit.derivedHDKey(hdKey: hdKey, at: i, hardened: false), let publicKey = key.publicKey else {
-//                throw DerivationError.derivateionFailed
-//            }
-//
-//            keys.append(HDPublicKey(raw: publicKey, chainCode: chainCode, xPubKey: xPubKey, depth: key.depth, fingerprint: key.fingerprint, childIndex: key.childIndex))
-//        }
-//
-//        return keys
+    public func derivedNonHardenedPublicKeys(at indices: Range<UInt32>) throws -> [HDPublicKey] {
+        guard let firstIndex = indices.first, let lastIndex = indices.last else {
+            return []
+        }
+
+        if (0x80000000 & firstIndex) != 0 && (0x80000000 & lastIndex) != 0 {
+            fatalError("invalid child index")
+        }
+
+        let hdPubKey = publicKey()
+        var keys = [HDPublicKey]()
+
+        try indices.forEach { int32 in
+            keys.append(try hdPubKey.derived(at: int32))
+        }
+
+        return keys
     }
     
 }
 
 enum DerivationError : Error {
     case derivationFailed
+    case invalidChildIndex
+    case invalidHmacToPoint
+    case invalidRawToPoint
+    case invalidCombinePoints
 }

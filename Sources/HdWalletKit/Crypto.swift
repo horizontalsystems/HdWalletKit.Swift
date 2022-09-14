@@ -31,14 +31,15 @@ public struct Crypto {
         return derivedKeyData
     }
 
-    static func publicKey(privateKey: Data, compressed: Bool) -> Data {
-        let privateKey = privateKey.bytes
-        var publicKey = secp256k1_pubkey()
+    static func publicKey(_ publicKey: secp256k1_pubkey, compressed: Bool) -> Data {
+        var outputLen: Int = compressed ? 33 : 65
 
         let context = secp256k1_context_create(UInt32(SECP256K1_CONTEXT_SIGN | SECP256K1_CONTEXT_VERIFY))!
-        _ = SecpResult(secp256k1_ec_pubkey_create(context, &publicKey, privateKey))
+        defer {
+            secp256k1_context_destroy(context)
+        }
 
-        var outputLen: Int = compressed ? 33 : 65
+        var publicKey = publicKey
         var output = Data(count: outputLen)
         let compressedFlags = compressed ? UInt32(SECP256K1_EC_COMPRESSED) : UInt32(SECP256K1_EC_UNCOMPRESSED)
         output.withUnsafeMutableBytes { pointer -> Void in
@@ -46,8 +47,21 @@ public struct Crypto {
             secp256k1_ec_pubkey_serialize(context, p, &outputLen, &publicKey, compressedFlags)
         }
 
-        secp256k1_context_destroy(context)
         return output
+    }
+
+    static func publicKey(privateKey: Data, compressed: Bool) -> Data {
+        let privateKey = privateKey.bytes
+        var pubKeyPoint = secp256k1_pubkey()
+
+        let context = secp256k1_context_create(UInt32(SECP256K1_CONTEXT_SIGN | SECP256K1_CONTEXT_VERIFY))!
+        defer {
+            secp256k1_context_destroy(context)
+        }
+        _ = SecpResult(secp256k1_ec_pubkey_create(context, &pubKeyPoint, privateKey))
+
+
+        return publicKey(pubKeyPoint, compressed: compressed)
     }
 
 }
