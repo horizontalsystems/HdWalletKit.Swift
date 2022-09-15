@@ -10,9 +10,6 @@
 		3A39D09C2757536E0022CB8B /* ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3A39D09A2757536E0022CB8B /* ViewController.swift */; };
 		3A39D09D2757536E0022CB8B /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3A39D09B2757536E0022CB8B /* AppDelegate.swift */; };
 		6BB68B6028C9D5D200AD3F35 /* HdWalletKit in Frameworks */ = {isa = PBXBuildFile; productRef = 6BB68B5F28C9D5D200AD3F35 /* HdWalletKit */; };
-		6BB68B9528CB08AA00AD3F35 /* Crypto in Frameworks */ = {isa = PBXBuildFile; productRef = 6BB68B9428CB08AA00AD3F35 /* Crypto */; };
-		6BB68B9728CB08AA00AD3F35 /* _CryptoExtras in Frameworks */ = {isa = PBXBuildFile; productRef = 6BB68B9628CB08AA00AD3F35 /* _CryptoExtras */; };
-		6BB68B9A28CB08D900AD3F35 /* secp256k1 in Frameworks */ = {isa = PBXBuildFile; productRef = 6BB68B9928CB08D900AD3F35 /* secp256k1 */; };
 		D94502FD261F98A500F6BF2E /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = D94502FC261F98A500F6BF2E /* Assets.xcassets */; };
 /* End PBXBuildFile section */
 
@@ -31,9 +28,6 @@
 			buildActionMask = 2147483647;
 			files = (
 				6BB68B6028C9D5D200AD3F35 /* HdWalletKit in Frameworks */,
-				6BB68B9A28CB08D900AD3F35 /* secp256k1 in Frameworks */,
-				6BB68B9528CB08AA00AD3F35 /* Crypto in Frameworks */,
-				6BB68B9728CB08AA00AD3F35 /* _CryptoExtras in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -94,9 +88,6 @@
 			name = "iOS Example";
 			packageProductDependencies = (
 				6BB68B5F28C9D5D200AD3F35 /* HdWalletKit */,
-				6BB68B9428CB08AA00AD3F35 /* Crypto */,
-				6BB68B9628CB08AA00AD3F35 /* _CryptoExtras */,
-				6BB68B9928CB08D900AD3F35 /* secp256k1 */,
 			);
 			productName = "iOS Example";
 			productReference = D94502F5261F98A400F6BF2E /* iOS Example.app */;
@@ -370,21 +361,6 @@
 		6BB68B5F28C9D5D200AD3F35 /* HdWalletKit */ = {
 			isa = XCSwiftPackageProductDependency;
 			productName = HdWalletKit;
-		};
-		6BB68B9428CB08AA00AD3F35 /* Crypto */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = 6BB68B9328CB08AA00AD3F35 /* XCRemoteSwiftPackageReference "swift-crypto" */;
-			productName = Crypto;
-		};
-		6BB68B9628CB08AA00AD3F35 /* _CryptoExtras */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = 6BB68B9328CB08AA00AD3F35 /* XCRemoteSwiftPackageReference "swift-crypto" */;
-			productName = _CryptoExtras;
-		};
-		6BB68B9928CB08D900AD3F35 /* secp256k1 */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = 6BB68B9828CB08D900AD3F35 /* XCRemoteSwiftPackageReference "secp256k1.swift" */;
-			productName = secp256k1;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};
