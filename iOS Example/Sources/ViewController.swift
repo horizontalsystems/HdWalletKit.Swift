@@ -7,7 +7,10 @@ class ViewController: UIViewController {
         super.viewDidLoad()
 
         let words = ["piece", "hunt", "scene", "agent", "subject", "clever", "expand", "maze", "drastic", "flash", "local", "usage"]
-        let seed = Mnemonic.seed(mnemonic: words)
+        guard let seed = Mnemonic.seed(mnemonic: words) else {
+            print("==! Can't create Seed!")
+            return
+        }
         print("==> Seed: \(seed.hex)")
 
         let hdWallet = HDWallet(seed: seed, coinType: 0, xPrivKey: 0x0488ade4, xPubKey: 0x0488b21e)
@@ -27,15 +30,13 @@ class ViewController: UIViewController {
     }
 
     func generateAndCheckPublicKeys(privateKey: HDPrivateKey) throws {
-        var last = privateKey
         for i in 0..<20 {
             print("================= \(i) ===================")
-            let privKey = try last.derived(at: UInt32(i), hardened: false)
+            let childKey = try privateKey.derived(at: UInt32(i), hardened: false)
 
-            print("==> Private key: \(privKey.raw.hex)")
-            print("==> Public key: \(privKey.publicKey(compressed: true).description)")
-
-            let pubKey = last.publicKey()
+            print("==> Private key: \(childKey.raw.hex)")
+            print("==> Public key: \(childKey.publicKey(compressed: true).description)")
+            let pubKey = privateKey.publicKey()
             print("==> DerivedPublic key: \(try pubKey.derived(at: UInt32(i)).description)")
         }
     }

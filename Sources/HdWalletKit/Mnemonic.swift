@@ -73,11 +73,10 @@ public struct Mnemonic {
         return mnemonic
     }
 
-    public static func seed(mnemonic m: [String], passphrase: String = "") -> Data {
-        let mnemonic = m.joined(separator: " ") //.decomposedStringWithCompatibilityMapping.data(using: .utf8)!
+    public static func seed(mnemonic m: [String], passphrase: String = "") -> Data? {
+        let mnemonic = m.joined(separator: " ")
         let salt = ("mnemonic" + passphrase).decomposedStringWithCompatibilityMapping.data(using: .utf8)!
-        let seed = Crypto.deriveKey(password: mnemonic, salt: salt)
-        return seed
+        return Crypto.deriveKey(password: mnemonic, salt: salt)
     }
 
     public static func validate(words: [String], language: Language = .english) throws {

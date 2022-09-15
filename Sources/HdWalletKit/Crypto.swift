@@ -10,25 +10,28 @@ public struct Crypto {
         return Data(HMAC<SHA512>.authenticationCode(for: data, using: symmetricKey))
     }
 
-    static func deriveKey(password: String, salt: Data, iterations: Int = 2048, keyLength: Int = 64) -> Data {
-        var derivedKeyData = Data(repeating: 0, count: keyLength)
-        let derivationStatus = derivedKeyData.withUnsafeMutableBytes { derivedKeyBytes in
-            salt.withUnsafeBytes { saltBytes in
-                CCKeyDerivationPBKDF(
+    static func deriveKey(password: String, salt: Data, iterations: Int = 2048, keyLength: Int = 64) -> Data? {
+        var derivedKey = Data(repeating: 0, count: keyLength)
+
+        if derivedKey.withUnsafeMutableBytes({ derivedKeyBytes -> Int32 in
+            salt.withUnsafeBytes { saltBytes -> Int32 in
+                guard let saltPointer = saltBytes.bindMemory(to: UInt8.self).baseAddress else { return 1 }
+                guard let derivedKeyPointer = derivedKeyBytes.baseAddress?.assumingMemoryBound(to: UInt8.self) else { return 1 }
+
+                return CCKeyDerivationPBKDF(
                         CCPBKDFAlgorithm(kCCPBKDF2),
                         password, password.count,
-                        saltBytes, salt.count,
+                        saltPointer, salt.count,
                         CCPBKDFAlgorithm(kCCPRFHmacAlgSHA512),
                         UInt32(iterations),
-                        derivedKeyBytes, keyLength)
+                        derivedKeyPointer, keyLength)
             }
-        }
-        if (derivationStatus != 0) { // todo: Handle case with wrong status
-            print("=> Can't derive key: \(derivationStatus)")
-            return Data()
+        }) != 0 {
+            print("=> Can't derive key!")
+            return nil
         }
 
-        return derivedKeyData
+        return derivedKey
     }
 
     static func publicKey(_ publicKey: secp256k1_pubkey, compressed: Bool) -> Data {
@@ -43,7 +46,9 @@ public struct Crypto {
         var output = Data(count: outputLen)
         let compressedFlags = compressed ? UInt32(SECP256K1_EC_COMPRESSED) : UInt32(SECP256K1_EC_UNCOMPRESSED)
         output.withUnsafeMutableBytes { pointer -> Void in
-            guard let p = pointer.bindMemory(to: UInt8.self).baseAddress else { return }
+            guard let p = pointer.bindMemory(to: UInt8.self).baseAddress else {
+                return
+            }
             secp256k1_ec_pubkey_serialize(context, p, &outputLen, &publicKey, compressedFlags)
         }
 
@@ -90,7 +95,7 @@ enum SecpResult {
     case success
     case failure
 
-    init(_ result:Int32) {
+    init(_ result: Int32) {
         switch result {
         case 1:
             self = .success

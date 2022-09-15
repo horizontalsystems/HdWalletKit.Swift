@@ -62,7 +62,7 @@ public struct Base58 {
         }
 
         for b in encodedBytes {
-            str += String(baseAlphabets[String.Index(encodedOffset: Int(b))])
+            str += String(baseAlphabets[String.Index(utf16Offset: Int(b), in: baseAlphabets)])
         }
 
         return str
@@ -80,9 +80,9 @@ public struct Base58 {
         let size = sizeFromBase(size: string.lengthOfBytes(using: .utf8) - zerosCount)
         var decodedBytes: [UInt8] = Array(repeating: 0, count: size)
         for c in string {
-            guard let baseIndex = baseAlphabets.index(of: c) else { return Data() }
+            guard let baseIndex = baseAlphabets.firstIndex(of: c) else { return Data() }
 
-            var carry = baseIndex.encodedOffset
+            var carry = baseIndex.utf16Offset(in: baseAlphabets)
             var i = 0
             for j in (0...decodedBytes.count - 1).reversed() where carry != 0 || i < length {
                 carry += base * Int(decodedBytes[j])

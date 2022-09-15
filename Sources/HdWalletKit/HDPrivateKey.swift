@@ -80,14 +80,18 @@ public class HDPrivateKey {
             secp256k1_context_destroy(context)
         }
 
-        var privKey = raw.bytes
-        if factor.withUnsafeBytes({ (factorPointer: UnsafePointer<UInt8>) -> Int32 in
-            secp256k1_ec_seckey_tweak_add(context, UnsafeMutablePointer<UInt8>(&privKey), factorPointer)
+        var rawVariable = raw
+        if rawVariable.withUnsafeMutableBytes ({ privateKeyBytes -> Int32 in
+            factor.withUnsafeBytes { factorBytes -> Int32 in
+                guard let factorPointer = factorBytes.bindMemory(to: UInt8.self).baseAddress else { return 0 }
+                guard let privateKeyPointer = privateKeyBytes.baseAddress?.assumingMemoryBound(to: UInt8.self) else { return 0 }
+                return secp256k1_ec_seckey_tweak_add(context, privateKeyPointer, factorPointer)
+           }
         }) == 0 {
-            throw DerivationError.invalidHmacToPoint
+           throw DerivationError.invalidCombineTweak
         }
 
-        let derivedPrivateKey = Data(privKey)
+        let derivedPrivateKey = Data(rawVariable)
         let derivedChainCode = digest[32..<64]
 
         let hash = Crypto.ripeMd160Sha256(publicKey)
@@ -131,4 +135,5 @@ enum DerivationError : Error {
     case invalidHmacToPoint
     case invalidRawToPoint
     case invalidCombinePoints
+    case invalidCombineTweak
 }

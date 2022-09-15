@@ -76,15 +76,17 @@ public class HDPublicKey {
 
         // Convert HMAC left side to Point, and combine with Parent PublicKey(Parent Point).
         var hmacPoint = secp256k1_pubkey()
-        if hmacPrivateKey.withUnsafeBytes({ (privateKeyPointer: UnsafePointer<UInt8>) -> Int32 in
-            secp256k1_ec_pubkey_create(context, UnsafeMutablePointer<secp256k1_pubkey>(&hmacPoint), privateKeyPointer)
+        if hmacPrivateKey.withUnsafeBytes({ hmacPrivateKeyBytes -> Int32 in
+            guard let hmacPrivateKeyPointer = hmacPrivateKeyBytes.bindMemory(to: UInt8.self).baseAddress else { return 0 }
+            return secp256k1_ec_pubkey_create(context, &hmacPoint, hmacPrivateKeyPointer)
         }) == 0 {
             throw DerivationError.invalidHmacToPoint
         }
 
         var parentPoint = secp256k1_pubkey()
-        if raw.withUnsafeBytes({ (serializedKeyPointer: UnsafePointer<UInt8>) -> Int32 in
-            secp256k1_ec_pubkey_parse(context, UnsafeMutablePointer<secp256k1_pubkey>(&parentPoint), serializedKeyPointer, raw.count)
+        if raw.withUnsafeBytes({ rawBytes -> Int32 in
+            guard let rawPointer = rawBytes.bindMemory(to: UInt8.self).baseAddress else { return 0 }
+            return secp256k1_ec_pubkey_parse(context, &parentPoint, rawPointer, raw.count)
         }) == 0 {
             throw DerivationError.invalidRawToPoint
         }
