@@ -118,8 +118,6 @@
 			);
 			mainGroup = D94502EC261F98A400F6BF2E;
 			packageReferences = (
-				6BB68B9328CB08AA00AD3F35 /* XCRemoteSwiftPackageReference "swift-crypto" */,
-				6BB68B9828CB08D900AD3F35 /* XCRemoteSwiftPackageReference "secp256k1.swift" */,
 			);
 			productRefGroup = D94502F6261F98A400F6BF2E /* Products */;
 			projectDirPath = "";
@@ -337,25 +335,6 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
-
-/* Begin XCRemoteSwiftPackageReference section */
-		6BB68B9328CB08AA00AD3F35 /* XCRemoteSwiftPackageReference "swift-crypto" */ = {
-			isa = XCRemoteSwiftPackageReference;
-			repositoryURL = "https://github.com/apple/swift-crypto.git";
-			requirement = {
-				kind = upToNextMajorVersion;
-				minimumVersion = 2.0.0;
-			};
-		};
-		6BB68B9828CB08D900AD3F35 /* XCRemoteSwiftPackageReference "secp256k1.swift" */ = {
-			isa = XCRemoteSwiftPackageReference;
-			repositoryURL = "https://github.com/GigaBitcoin/secp256k1.swift.git";
-			requirement = {
-				kind = upToNextMajorVersion;
-				minimumVersion = 0.9.1;
-			};
-		};
-/* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
 		6BB68B5F28C9D5D200AD3F35 /* HdWalletKit */ = {
