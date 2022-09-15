@@ -1,4 +1,4 @@
-# HdWalletKit
+# HdWalletKit.Swift
 
 HD Wallet library that makes possible generating and validating mnemonic phrases. Also it can generates public / private keys for HD keychain.
 
@@ -17,7 +17,7 @@ the `dependencies` value of your `Package.swift`.
 
 ```swift
 dependencies: [
-    .package(url: "https://github.com/horizontalsystems/HdWalletKit.git", .upToNextMajor(from: "1.0.0"))
+    .package(url: "https://github.com/horizontalsystems/HdWalletKit.Swift.git", .upToNextMajor(from: "1.1.0"))
 ]
 ```
 
