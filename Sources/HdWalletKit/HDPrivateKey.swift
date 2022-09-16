@@ -129,6 +129,14 @@ public class HDPrivateKey {
     
 }
 
+extension HDPrivateKey {
+
+    public var description: String {
+        "\(raw.hex) ::: \(chainCode.hex) ::: depth: \(depth) - fingerprint: \(fingerprint) - childIndex: \(childIndex)"
+    }
+
+}
+
 enum DerivationError : Error {
     case derivationFailed
     case invalidChildIndex

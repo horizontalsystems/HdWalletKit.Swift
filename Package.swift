@@ -24,5 +24,10 @@ let package = Package(
                 .product(name: "_CryptoExtras", package: "swift-crypto"),
                 .product(name: "secp256k1", package: "secp256k1.swift"),
             ]),
+        .testTarget(
+            name: "HdWalletKitTests",
+            dependencies: [
+                "HdWalletKit"
+            ]),
     ]
 )

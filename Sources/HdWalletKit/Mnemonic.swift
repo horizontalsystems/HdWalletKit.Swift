@@ -1,10 +1,8 @@
 import Foundation
-import CryptoKit
-import CommonCrypto
 
 public struct Mnemonic {
 
-    public enum WordCount: Int {
+    public enum WordCount: Int, CaseIterable {
         case twelve = 12
         case fifteen = 15
         case eighteen = 18
@@ -18,9 +16,10 @@ public struct Mnemonic {
         var checksumLength: Int {
             self.rawValue / 3
         }
+
     }
 
-    public enum Language {
+    public enum Language: CaseIterable {
         case english
         case japanese
         case korean
@@ -29,11 +28,13 @@ public struct Mnemonic {
         case traditionalChinese
         case french
         case italian
+        case czech
+        case portuguese
     }
 
     public enum ValidationError: Error {
-        case invalidWordsCount
-        case invalidWord(word: String)
+        case invalidWords(count: Int)
+        case invalidWord(index: Int)
         case invalidChecksum
     }
 
@@ -57,7 +58,7 @@ public struct Mnemonic {
         let list = wordList(for: language)
         var bin = String(entropy.flatMap { ("00000000" + String($0, radix:2)).suffix(8) })
 
-        let hash = SHA256.hash(data: entropy)
+        let hash = Crypto.sha256(entropy)
         let bits = entropy.count * 8
         let cs = bits / 32
 
@@ -76,35 +77,47 @@ public struct Mnemonic {
     public static func seed(mnemonic m: [String], passphrase: String = "") -> Data? {
         let mnemonic = m.joined(separator: " ")
         let salt = ("mnemonic" + passphrase).decomposedStringWithCompatibilityMapping.data(using: .utf8)!
-        return Crypto.deriveKey(password: mnemonic, salt: salt)
+        let seed = Crypto.deriveKey(password: mnemonic, salt: salt, iterations: 2048, keyLength: 64)
+        return seed
     }
 
-    public static func validate(words: [String], language: Language = .english) throws {
-        guard let wordCount = WordCount(rawValue: words.count) else {
-            throw ValidationError.invalidWordsCount
-        }
-
-        let list = wordList(for: language).map(String.init)
-
-        // generate indices array
+    private static func seedBits(words: [String], list: [String]) throws -> String {
         var seedBits = ""
-
-        for word in words {
+        try words.enumerated().forEach { (index, word) in
             guard let index = list.firstIndex(of: word) else {
-                throw ValidationError.invalidWord(word: word)
+                throw ValidationError.invalidWord(index: index)
             }
 
             let binaryString = String(index, radix: 2).pad(toSize: 11)
 
             seedBits.append(contentsOf: binaryString)
         }
+        return seedBits
+    }
 
-        let checksumLength = words.count / 3
+    private static func seedBitsForLanguage(words: [String]) throws -> String {
+        var wrongWordIndex: Int = 0
 
-        guard checksumLength == wordCount.checksumLength else {
-            throw ValidationError.invalidChecksum
+        for language in (Language.allCases.map { wordList(for: $0).map(String.init) }) {
+            do {
+                return try seedBits(words: words, list: language)
+            } catch {
+                if case let ValidationError.invalidWord(index) = error {
+                    wrongWordIndex = wrongWordIndex < index ? index : wrongWordIndex
+                }
+            }
         }
 
+        throw ValidationError.invalidWord(index: wrongWordIndex)
+    }
+
+    public static func validate(words: [String]) throws {
+        guard let wordCount = WordCount(rawValue: words.count) else {
+            throw ValidationError.invalidWords(count: words.count)
+        }
+
+        let seedBits = try seedBitsForLanguage(words: words)
+        let checksumLength = wordCount.checksumLength
         let dataBitsLength = seedBits.count - checksumLength
 
         let dataBits = String(seedBits.prefix(dataBitsLength))
@@ -114,8 +127,8 @@ public struct Mnemonic {
             throw ValidationError.invalidChecksum
         }
 
-        let hash = SHA256.hash(data: dataBytes)
-        let hashBits = Data(hash).toBitArray().joined(separator: "").prefix(checksumLength)
+        let hash = Crypto.sha256(dataBytes)
+        let hashBits = hash.toBitArray().joined(separator: "").prefix(checksumLength)
 
         guard hashBits == checksumBits else {
             throw ValidationError.invalidChecksum
@@ -140,6 +153,10 @@ public struct Mnemonic {
             return WordList.french
         case .italian:
             return WordList.italian
+        case .czech:
+            return WordList.czech
+        case .portuguese:
+            return WordList.portuguese
         }
     }
 }
