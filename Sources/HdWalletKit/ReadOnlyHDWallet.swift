@@ -1,4 +1,5 @@
 import Foundation
+import HsCryptoKit
 
 public class ReadOnlyHDWallet {
 

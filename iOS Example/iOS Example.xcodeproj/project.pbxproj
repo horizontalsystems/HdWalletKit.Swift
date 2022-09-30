@@ -17,6 +17,7 @@
 		3A39D09A2757536E0022CB8B /* ViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ViewController.swift; sourceTree = "<group>"; };
 		3A39D09B2757536E0022CB8B /* AppDelegate.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		6BB68B5D28C9D2D700AD3F35 /* CryptoKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CryptoKit.framework; path = System/Library/Frameworks/CryptoKit.framework; sourceTree = SDKROOT; };
+		6BF7E10628E6F36800AEE0F6 /* HsCryptoKit.Swift */ = {isa = PBXFileReference; lastKnownFileType = wrapper; name = HsCryptoKit.Swift; path = ../../HsCryptoKit.Swift; sourceTree = "<group>"; };
 		D94502F5261F98A400F6BF2E /* iOS Example.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "iOS Example.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		D94502FC261F98A500F6BF2E /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		D9450301261F98A500F6BF2E /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
@@ -37,6 +38,7 @@
 		D94502EC261F98A400F6BF2E = {
 			isa = PBXGroup;
 			children = (
+				6BF7E10628E6F36800AEE0F6 /* HsCryptoKit.Swift */,
 				D94502F7261F98A400F6BF2E /* Sources */,
 				D94502F6261F98A400F6BF2E /* Products */,
 				D945030A261F99CC00F6BF2E /* Frameworks */,

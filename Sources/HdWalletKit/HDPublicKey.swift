@@ -1,7 +1,6 @@
 import Foundation
-import CryptoKit
+import HsCryptoKit
 import secp256k1
-import secp256k1_bindings
 
 public class HDPublicKey {
     public let xPubKey: UInt32

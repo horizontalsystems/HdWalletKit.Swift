@@ -1,6 +1,5 @@
 import Foundation
-import CryptoKit
-import Crypto
+import HsCryptoKit
 
 extension String {
 

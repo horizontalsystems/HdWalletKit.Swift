@@ -1,7 +1,6 @@
 import Foundation
-import Crypto
+import HsCryptoKit
 import secp256k1
-import secp256k1_bindings
 
 public class HDPrivateKey {
     let xPrivKey: UInt32
