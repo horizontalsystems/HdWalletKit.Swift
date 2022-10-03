@@ -6,3 +6,5 @@ xcuserdata
 !Podfile.lock
 .idea/
 .build/
+.swiftpm/
+Package.resolved
