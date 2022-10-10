@@ -136,7 +136,7 @@ public class HDPublicKey {
 extension HDPublicKey {
 
     public var description: String {
-        "\(raw.hex) ::: \(chainCode.hex) ::: depth: \(depth) - fingerprint: \(fingerprint) - childIndex: \(childIndex)"
+        "\(raw.hs.hex) ::: \(chainCode.hs.hex) ::: depth: \(depth) - fingerprint: \(fingerprint) - childIndex: \(childIndex)"
     }
 
 }
