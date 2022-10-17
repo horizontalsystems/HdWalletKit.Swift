@@ -1,18 +1,24 @@
 import Foundation
 
 public class HDWallet {
-    private let seed: Data
     private let keychain: HDKeychain
 
     private let purpose: UInt32
     private let coinType: UInt32
     public var gapLimit: Int
 
-    public init(seed: Data, coinType: UInt32, xPrivKey: UInt32, xPubKey: UInt32, gapLimit: Int = 5, purpose: Purpose = .bip44) {
-        self.seed = seed
+    public init(seed: Data, coinType: UInt32, xPrivKey: UInt32, gapLimit: Int = 5, purpose: Purpose = .bip44) {
         self.gapLimit = gapLimit
 
-        keychain = HDKeychain(seed: seed, xPrivKey: xPrivKey, xPubKey: xPubKey)
+        keychain = HDKeychain(seed: seed, xPrivKey: xPrivKey)
+        self.purpose = purpose.rawValue
+        self.coinType = coinType
+    }
+
+    public init(masterKey: HDPrivateKey, coinType: UInt32, gapLimit: Int = 5, purpose: Purpose = .bip44) {
+        self.gapLimit = gapLimit
+
+        keychain = HDKeychain(privateKey: masterKey)
         self.purpose = purpose.rawValue
         self.coinType = coinType
     }

@@ -6,7 +6,7 @@ class HDWalletKitTests: XCTestCase {
     func testExample() {
         let words = try! Mnemonic.generate()
         let seed = Mnemonic.seed(mnemonic: words)!
-        let hdWallet = HDWallet(seed: seed, coinType: 1, xPrivKey: 1, xPubKey: 1)
+        let hdWallet = HDWallet(seed: seed, coinType: 1, xPrivKey: HDExtendedKeyType.xprv.rawValue)
 
         _ = try! hdWallet.privateKey(account: 1, index: 1, chain: .external)
 
@@ -16,7 +16,7 @@ class HDWalletKitTests: XCTestCase {
     func testPublicKeyInitializationFromExtendedPublicKeyString() {
         let words = try! Mnemonic.generate()
         let seed = Mnemonic.seed(mnemonic: words)!
-        let hdWallet = HDWallet(seed: seed, coinType: 1, xPrivKey: 1, xPubKey: 0x0488b21e, purpose: .bip49)
+        let hdWallet = HDWallet(seed: seed, coinType: 1, xPrivKey: HDExtendedKeyType.xprv.rawValue, purpose: .bip49)
 
         let k = try! hdWallet.publicKeys(account: 0, indices: 0..<1, chain: .external).first!
         let extended = try! hdWallet.privateKey(path: "m/49'/1'/0'").publicKey().extended()
@@ -33,7 +33,7 @@ class HDWalletKitTests: XCTestCase {
     func testBatchPublicKeyGeneration() {
         let words = try! Mnemonic.generate()
         let seed = Mnemonic.seed(mnemonic: words)!
-        let hdWallet = HDWallet(seed: seed, coinType: 1, xPrivKey: 1, xPubKey: 1)
+        let hdWallet = HDWallet(seed: seed, coinType: 1, xPrivKey: HDExtendedKeyType.xprv.rawValue)
 
         var publicKeys = [HDPublicKey]()
         for i in 0..<10 {

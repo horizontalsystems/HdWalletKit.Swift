@@ -136,6 +136,15 @@ public struct Mnemonic {
         }
     }
 
+    public static func isValid(words: [String]) -> Bool {
+        do {
+            try validate(words: words)
+            return true
+        } catch {
+            return false
+        }
+    }
+
     public static func wordList(for language: Language) -> [String.SubSequence] {
         switch language {
         case .english:

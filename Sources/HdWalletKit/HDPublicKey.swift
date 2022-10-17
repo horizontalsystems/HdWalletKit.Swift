@@ -38,7 +38,7 @@ public class HDPublicKey {
         self.childIndex = childIndex
     }
 
-    public func extended() -> String {
+    var data: Data {
         var data = Data()
         data += xPubKey.bigEndian.data
         data += Data([depth])
@@ -47,7 +47,11 @@ public class HDPublicKey {
         data += chainCode
         data += raw
         let checksum = Crypto.doubleSha256(data).prefix(4)
-        return Base58.encode(data + checksum)
+        return data + checksum
+    }
+
+    public func extended() -> String {
+        Base58.encode(data)
     }
 
     public func derived(at index: UInt32) throws -> HDPublicKey {
@@ -69,7 +73,7 @@ public class HDPublicKey {
         let derivedChainCode = digest[32..<64]
 
         let hash = Crypto.ripeMd160Sha256(raw)
-        let fingerprint = hash[0..<4].uint32
+        let fingerprint = hash[0..<4].hs.to(type: UInt32.self)
 
         let context = secp256k1_context_create(UInt32(SECP256K1_CONTEXT_SIGN|SECP256K1_CONTEXT_VERIFY))!
 
