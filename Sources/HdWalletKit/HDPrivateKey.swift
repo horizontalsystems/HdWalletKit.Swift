@@ -27,7 +27,7 @@ public class HDPrivateKey {
         self.init(privateKey: privateKey, chainCode: chainCode, xPrivKey: xPrivKey, depth: 0, fingerprint: 0, childIndex: 0)
     }
 
-    convenience init(seed: Data, xPrivKey: UInt32) {
+    public convenience init(seed: Data, xPrivKey: UInt32) {
         let hmac = Crypto.hmacSha512(seed)
         let privateKey = hmac[0..<32]
         let chainCode = hmac[32..<64]
@@ -35,31 +35,15 @@ public class HDPrivateKey {
     }
 
     public init(extendedKey: Data) throws {
-        try HDPrivateKey.isValid(extendedKey)
-        xPrivKey = extendedKey[0..<4].hs.to(type: UInt32.self).bigEndian
+        try HDExtendedKey.isValid(extendedKey, isPublic: false)
+        xPrivKey = extendedKey.prefix(4).hs.to(type: UInt32.self).bigEndian
 
         depth = extendedKey[5]
         fingerprint = extendedKey[6..<10].hs.to(type: UInt32.self)
         childIndex = extendedKey[10..<14].hs.to(type: UInt32.self)
         chainCode = extendedKey[14..<46]
         // 46 byte = 0
-        raw = extendedKey[47..<69]
-    }
-
-    static public func isValid(_ extendedKey: Data) throws {
-        // extended privateKey length : 4 + 1 + 4 + 4 + 32 + 1 + 32 + 4
-        guard extendedKey.count == HDExtendedKey.length else {
-            throw ExtendedKeyParsingError.wrongKeyLength
-        }
-
-        guard HDExtendedKeyVersion(rawValue: extendedKey[0..<4].hs.to(type: UInt32.self).bigEndian) != nil else {
-            throw ExtendedKeyParsingError.wrongVersion
-        }
-
-        let checksum: Data = extendedKey[69..<73]
-        guard Data(Crypto.doubleSha256(extendedKey[0..<69]).prefix(4)) == checksum else {
-            throw ExtendedKeyParsingError.invalidChecksum
-        }
+        raw = extendedKey[47..<79]
     }
 
     public func publicKey(compressed: Bool = true) -> HDPublicKey {
@@ -177,11 +161,4 @@ public enum DerivationError: Error {
     case invalidRawToPoint
     case invalidCombinePoints
     case invalidCombineTweak
-}
-
-public enum ExtendedKeyParsingError: Error {
-    case wrongKeyLength
-    case wrongVersion
-    case wrongDerivedType
-    case invalidChecksum
 }

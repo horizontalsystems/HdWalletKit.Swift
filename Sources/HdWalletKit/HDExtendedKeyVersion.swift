@@ -6,12 +6,8 @@ public enum HDExtendedKeyVersion: UInt32, CaseIterable {
     case xpub = 0x0488b21e
     case yprv = 0x049d7878
     case ypub = 0x049d7cb2
-    case Yprv = 0x0295b005
-    case Ypub = 0x0295b43f
     case zprv = 0x04b2430c
     case zpub = 0x04b24746
-    case Zprv = 0x02aa7a99
-    case Zpub = 0x02aa7ed3
     case Ltpv = 0x019d9cfe
     case Ltub = 0x019da462
     case Mtpv = 0x01b26792
@@ -51,12 +47,8 @@ public enum HDExtendedKeyVersion: UInt32, CaseIterable {
         case .xpub: return "xpub"
         case .yprv: return "yprv"
         case .ypub: return "ypub"
-        case .Yprv: return "Yprv"
-        case .Ypub: return "Ypub"
         case .zprv: return "zprv"
         case .zpub: return "zpub"
-        case .Zprv: return "Zprv"
-        case .Zpub: return "Zpub"
         case .Ltpv: return "Ltpv"
         case .Ltub: return "Ltub"
         case .Mtpv: return "Mtpv"
@@ -67,14 +59,14 @@ public enum HDExtendedKeyVersion: UInt32, CaseIterable {
     public var mnemonicDerivation: MnemonicDerivation {
         switch self {
         case .xprv, .xpub, .Ltpv, .Ltub: return .bip44
-        case .yprv, .ypub, .Yprv, .Ypub, .Mtpv, .Mtub: return .bip49
-        case .zprv, .zpub, .Zprv, .Zpub: return .bip84
+        case .yprv, .ypub, .Mtpv, .Mtub: return .bip49
+        case .zprv, .zpub: return .bip84
         }
     }
 
     public var coinType: ExtendedKeyCoinType {
         switch self {
-        case .xprv, .xpub, .yprv, .ypub, .Yprv, .Ypub, .zprv, .zpub, .Zprv, .Zpub: return .bitcoin
+        case .xprv, .xpub, .yprv, .ypub, .zprv, .zpub: return .bitcoin
         case .Ltpv, .Ltub, .Mtpv, .Mtub: return .litecoin
         }
     }
@@ -83,9 +75,7 @@ public enum HDExtendedKeyVersion: UInt32, CaseIterable {
         switch self {
         case .xprv: return .xpub
         case .yprv: return .ypub
-        case .Yprv: return .Ypub
         case .zprv: return .zpub
-        case .Zprv: return .Zpub
         case .Ltpv: return .Ltub
         case .Mtpv: return .Mtub
         default: return self
@@ -94,7 +84,7 @@ public enum HDExtendedKeyVersion: UInt32, CaseIterable {
 
     public var isPublic: Bool {
         switch self {
-        case .xpub, .ypub, .zpub, .Ypub, .Zpub,.Ltub, .Mtub: return true
+        case .xpub, .ypub, .zpub, .Ltub, .Mtub: return true
         default: return false
         }
     }

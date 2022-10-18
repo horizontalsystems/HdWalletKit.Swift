@@ -38,6 +38,18 @@ public class HDPublicKey {
         self.childIndex = childIndex
     }
 
+    public init(extendedKey: Data) throws {
+        try HDExtendedKey.isValid(extendedKey, isPublic: true)
+        xPubKey = extendedKey.prefix(4).hs.to(type: UInt32.self).bigEndian
+
+        depth = extendedKey[5]
+        fingerprint = extendedKey[6..<10].hs.to(type: UInt32.self)
+        childIndex = extendedKey[10..<14].hs.to(type: UInt32.self)
+        chainCode = extendedKey[14..<46]
+        // 46 byte = 0
+        raw = extendedKey[47..<69]
+    }
+
     var data: Data {
         var data = Data()
         data += xPubKey.bigEndian.data
