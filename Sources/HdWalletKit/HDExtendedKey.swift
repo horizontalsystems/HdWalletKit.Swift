@@ -3,18 +3,18 @@ import HsCryptoKit
 import HsExtensions
 
 public enum HDExtendedKey {
-    static let nonHardened = 81
+    static let length = 82
 
     case `private`(key: HDPrivateKey)
     case `public`(key: HDPublicKey)
 
     public init(extendedKey: String) throws {
         let version = try HDExtendedKey.version(extendedKey: extendedKey)
-        // extended key length : 4 + 1 + 4 + 4 + 32 + (HARDENED! Private has zero-bite 1) + 32 + 4
+        // extended key length : 4 + 1 + 4 + 4 + 32 + (HARDENED! Private has zero-bite 1 + 32 || Public has 33) + 4
         let shift = version.isPublic ? 0 : 1
 
         let data = Base58.decode(extendedKey)
-        guard data.count == HDExtendedKey.nonHardened + shift else {
+        guard data.count == HDExtendedKey.length else {
             throw ExtendedKeyParsingError.wrongKeyLength
         }
 
@@ -23,9 +23,8 @@ public enum HDExtendedKey {
             throw ExtendedKeyParsingError.wrongDerivedType
         }
 
-        let checksumIndex = 77 + shift
-        let checksum: Data = data[checksumIndex..<(checksumIndex + 4)]
-        guard Data(Crypto.doubleSha256(data[0..<checksumIndex]).prefix(4)) == checksum else {
+        let checksum: Data = data[78..<82]
+        guard Data(Crypto.doubleSha256(data[0..<78]).prefix(4)) == checksum else {
             throw ExtendedKeyParsingError.invalidChecksum
         }
 
@@ -91,13 +90,13 @@ public extension HDExtendedKey {
             depth = key.depth
         }
 
-        let version = HDExtendedKeyType(rawValue: xKey) ?? .xprv
+        let version = HDExtendedKeyVersion(rawValue: xKey) ?? .xprv
         return KeyInfo(mnemonicDerivation: version.mnemonicDerivation, coinType: version.coinType, derivedType: DerivedType(depth: depth))
     }
 
-    static func version(extendedKey: String) throws -> HDExtendedKeyType {
+    static func version(extendedKey: String) throws -> HDExtendedKeyVersion {
         let version = String(extendedKey.prefix(4))
-        guard let keyType = HDExtendedKeyType(string: version) else {
+        guard let keyType = HDExtendedKeyVersion(string: version) else {
             throw ParsingError.wrongVersion
         }
 

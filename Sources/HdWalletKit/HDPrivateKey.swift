@@ -48,11 +48,11 @@ public class HDPrivateKey {
 
     static public func isValid(_ extendedKey: Data) throws {
         // extended privateKey length : 4 + 1 + 4 + 4 + 32 + 1 + 32 + 4
-        guard extendedKey.count == HDExtendedKey.nonHardened + 1 else {
+        guard extendedKey.count == HDExtendedKey.length else {
             throw ExtendedKeyParsingError.wrongKeyLength
         }
 
-        guard HDExtendedKeyType(rawValue: extendedKey[0..<4].hs.to(type: UInt32.self).bigEndian) != nil else {
+        guard HDExtendedKeyVersion(rawValue: extendedKey[0..<4].hs.to(type: UInt32.self).bigEndian) != nil else {
             throw ExtendedKeyParsingError.wrongVersion
         }
 
@@ -66,8 +66,8 @@ public class HDPrivateKey {
         HDPublicKey(privateKey: self, chainCode: chainCode, xPubKey: version.pubKey.rawValue, depth: depth, fingerprint: fingerprint, childIndex: childIndex, compressed: compressed)
     }
 
-    var version: HDExtendedKeyType {
-        HDExtendedKeyType(rawValue: xPrivKey) ?? .xprv  //created key successfully validated before creation, so fallback not using
+    var version: HDExtendedKeyVersion {
+        HDExtendedKeyVersion(rawValue: xPrivKey) ?? .xprv  //created key successfully validated before creation, so fallback not using
     }
 
     var data: Data {

@@ -1,6 +1,7 @@
 import HsExtensions
 
-public enum HDExtendedKeyType: UInt32, CaseIterable {
+// https://github.com/satoshilabs/slips/blob/master/slip-0132.md
+public enum HDExtendedKeyVersion: UInt32, CaseIterable {
     case xprv = 0x0488ade4
     case xpub = 0x0488b21e
     case yprv = 0x049d7878
@@ -100,7 +101,7 @@ public enum HDExtendedKeyType: UInt32, CaseIterable {
 
 }
 
-extension HDExtendedKeyType {
+extension HDExtendedKeyVersion {
 
     enum ParsingError: Error {
         case wrongMnemonicDerivation

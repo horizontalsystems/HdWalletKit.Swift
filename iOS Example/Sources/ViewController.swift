@@ -13,7 +13,7 @@ class ViewController: UIViewController {
         }
         print("==> Seed: \(seed.hs.hex)")
 
-        let hdWallet = HDWallet(seed: seed, coinType: 0, xPrivKey: HDExtendedKeyType.xprv.rawValue)
+        let hdWallet = HDWallet(seed: seed, coinType: 0, xPrivKey: HDExtendedKeyVersion.xprv.rawValue)
         do {
             let privateKey = try hdWallet.privateKey(account: 0, index: 44, chain: .internal)
             print("==> HD Private key: \(privateKey.raw.hs.hex)")
