@@ -123,9 +123,9 @@ public extension HDExtendedKey {
     }
 
     struct KeyInfo {
-        let mnemonicDerivation: MnemonicDerivation
-        let coinType: ExtendedKeyCoinType
-        let derivedType: DerivedType
+        public let mnemonicDerivation: HDExtendedKeyVersion.MnemonicDerivation
+        public let coinType: HDExtendedKeyVersion.ExtendedKeyCoinType
+        public let derivedType: DerivedType
     }
 
     enum ParsingError: Error {

@@ -107,13 +107,13 @@ extension HDExtendedKeyVersion {
         case wrongMnemonicDerivation
     }
 
-}
+    public enum MnemonicDerivation {
+        case bip44, bip49, bip84
+    }
 
-public enum MnemonicDerivation {
-    case bip44, bip49, bip84
-}
+    public enum ExtendedKeyCoinType {
+        case bitcoin
+        case litecoin
+    }
 
-public enum ExtendedKeyCoinType {
-    case bitcoin
-    case litecoin
 }
