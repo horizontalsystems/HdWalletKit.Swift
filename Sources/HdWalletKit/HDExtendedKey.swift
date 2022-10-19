@@ -118,7 +118,7 @@ public extension HDExtendedKey {
         }
 
         let version = HDExtendedKeyVersion(rawValue: xKey) ?? .xprv
-        return KeyInfo(mnemonicDerivation: version.mnemonicDerivation, coinType: version.coinType, derivedType: DerivedType(depth: depth))
+        return KeyInfo(purpose: version.purpose, coinType: version.coinType, derivedType: DerivedType(depth: depth))
     }
 
     static func version(extendedKey: String) throws -> HDExtendedKeyVersion {
@@ -178,7 +178,7 @@ public extension HDExtendedKey {
     }
 
     struct KeyInfo {
-        public let mnemonicDerivation: HDExtendedKeyVersion.MnemonicDerivation
+        public let purpose: Purpose
         public let coinType: HDExtendedKeyVersion.ExtendedKeyCoinType
         public let derivedType: DerivedType
     }

@@ -13,8 +13,8 @@ public enum HDExtendedKeyVersion: UInt32, CaseIterable {
     case Mtpv = 0x01b26792
     case Mtub = 0x01b26ef6
 
-    public init(mnemonicDerivation: MnemonicDerivation, coinType: ExtendedKeyCoinType, isPrivate: Bool = true) throws {
-        switch mnemonicDerivation {
+    public init(purpose: Purpose, coinType: ExtendedKeyCoinType, isPrivate: Bool = true) throws {
+        switch purpose {
         case .bip44:
             switch coinType {
             case .bitcoin: self = isPrivate ? .xprv : .xpub
@@ -56,7 +56,7 @@ public enum HDExtendedKeyVersion: UInt32, CaseIterable {
         }
     }
 
-    public var mnemonicDerivation: MnemonicDerivation {
+    public var purpose: Purpose {
         switch self {
         case .xprv, .xpub, .Ltpv, .Ltub: return .bip44
         case .yprv, .ypub, .Mtpv, .Mtub: return .bip49
@@ -95,10 +95,6 @@ extension HDExtendedKeyVersion {
 
     enum ParsingError: Error {
         case wrongMnemonicDerivation
-    }
-
-    public enum MnemonicDerivation {
-        case bip44, bip49, bip84
     }
 
     public enum ExtendedKeyCoinType {
