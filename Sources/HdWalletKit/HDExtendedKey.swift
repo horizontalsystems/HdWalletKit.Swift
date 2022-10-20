@@ -26,11 +26,9 @@ public enum HDExtendedKey {
         }
 
         if version.isPublic {
-            let key = try HDPublicKey(extendedKey: data)
-            self = .public(key: key)
+            self = .public(key: try HDPublicKey(extendedKey: data))
         } else {
-            let key = try HDPrivateKey(extendedKey: data)
-            self = .private(key: key)
+            self = .private(key: try HDPrivateKey(extendedKey: data))
         }
     }
 

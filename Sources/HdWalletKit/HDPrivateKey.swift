@@ -54,12 +54,12 @@ public extension HDPrivateKey {
             throw DerivationError.invalidChildIndex
         }
 
-        let publicKey = Crypto.publicKey(privateKey: raw, compressed: true)
+        let publicKey = Crypto.publicKey(privateKey: privateKey, compressed: true)
 
         var data = Data()
         if hardened {
             data += Data([0])
-            data += raw
+            data += privateKey
         } else {
             data += publicKey
         }
@@ -75,7 +75,7 @@ public extension HDPrivateKey {
             secp256k1_context_destroy(context)
         }
 
-        var rawVariable = raw
+        var rawVariable = privateKey
         if rawVariable.withUnsafeMutableBytes ({ privateKeyBytes -> Int32 in
             factor.withUnsafeBytes { factorBytes -> Int32 in
                 guard let factorPointer = factorBytes.bindMemory(to: UInt8.self).baseAddress else { return 0 }
@@ -97,13 +97,13 @@ public extension HDPrivateKey {
                 chainCode: derivedChainCode,
                 version: version,
                 depth: depth + 1,
-                fingerprint: fingerprint,
-                childIndex: derivingIndex
+                fingerprint: fingerprint.bigEndian,
+                childIndex: derivingIndex.bigEndian
         )
     }
 
     func publicKey(compressed: Bool = true) -> HDPublicKey {
-        HDPublicKey(raw: Crypto.publicKey(privateKey: raw, compressed: compressed),
+        HDPublicKey(raw: Crypto.publicKey(privateKey: privateKey, compressed: compressed),
                 chainCode: chainCode,
                 version: extendedVersion.pubKey.rawValue,
                 depth: depth,
