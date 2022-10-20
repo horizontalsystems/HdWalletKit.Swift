@@ -2,71 +2,11 @@ import Foundation
 import HsCryptoKit
 import secp256k1
 
-public class HDPublicKey {
-    public let xPubKey: UInt32
-    public let depth: UInt8
-    public let fingerprint: UInt32
-    public let childIndex: UInt32
+public class HDPublicKey: HDKey {}
 
-    public let raw: Data
-    public let chainCode: Data
+public extension HDPublicKey {
 
-    init(privateKey: HDPrivateKey, xPubKey: UInt32, compressed: Bool = true) {
-        self.xPubKey = xPubKey
-        raw = HDPublicKey.from(privateKey: privateKey.raw, compression: compressed)
-        chainCode = privateKey.chainCode
-        depth = 0
-        fingerprint = 0
-        childIndex = 0
-    }
-
-    init(privateKey: HDPrivateKey, chainCode: Data, xPubKey: UInt32, depth: UInt8, fingerprint: UInt32, childIndex: UInt32, compressed: Bool) {
-        self.xPubKey = xPubKey
-        raw = HDPublicKey.from(privateKey: privateKey.raw, compression: compressed)
-        self.chainCode = chainCode
-        self.depth = depth
-        self.fingerprint = fingerprint
-        self.childIndex = childIndex
-    }
-
-    init(raw: Data, chainCode: Data, xPubKey: UInt32, depth: UInt8, fingerprint: UInt32, childIndex: UInt32) {
-        self.xPubKey = xPubKey
-        self.raw = raw
-        self.chainCode = chainCode
-        self.depth = depth
-        self.fingerprint = fingerprint
-        self.childIndex = childIndex
-    }
-
-    public init(extendedKey: Data) throws {
-        try HDExtendedKey.isValid(extendedKey, isPublic: true)
-        xPubKey = extendedKey.prefix(4).hs.to(type: UInt32.self).bigEndian
-
-        depth = extendedKey[5]
-        fingerprint = extendedKey[6..<10].hs.to(type: UInt32.self)
-        childIndex = extendedKey[10..<14].hs.to(type: UInt32.self)
-        chainCode = extendedKey[14..<46]
-        // 46 byte = 0
-        raw = extendedKey[47..<69]
-    }
-
-    var data: Data {
-        var data = Data()
-        data += xPubKey.bigEndian.data
-        data += Data([depth])
-        data += fingerprint.littleEndian.data
-        data += childIndex.littleEndian.data
-        data += chainCode
-        data += raw
-        let checksum = Crypto.doubleSha256(data).prefix(4)
-        return data + checksum
-    }
-
-    public func extended() -> String {
-        Base58.encode(data)
-    }
-
-    public func derived(at index: UInt32) throws -> HDPublicKey {
+    func derived(at index: UInt32) throws -> HDPublicKey {
         let edge: UInt32 = 0x80000000
         guard (edge & index) == 0 else {
             throw DerivationError.invalidChildIndex
@@ -136,23 +76,11 @@ public class HDPublicKey {
         return HDPublicKey(
                 raw: childPublicKey,
                 chainCode: derivedChainCode,
-                xPubKey: xPubKey,
+                version: version,
                 depth: depth + 1,
                 fingerprint: fingerprint,
                 childIndex: derivingIndex
         )
-    }
-
-    static func from(privateKey raw: Data, compression: Bool = false) -> Data {
-        Crypto.publicKey(privateKey: raw, compressed: compression)
-    }
-
-}
-
-extension HDPublicKey {
-
-    public var description: String {
-        "\(raw.hs.hex) ::: \(chainCode.hs.hex) ::: depth: \(depth) - fingerprint: \(fingerprint) - childIndex: \(childIndex)"
     }
 
 }

@@ -9,60 +9,35 @@ public enum HDExtendedKey {
     case `public`(key: HDPublicKey)
 
     public init(extendedKey: String) throws {
-        let version = try HDExtendedKey.version(extendedKey: extendedKey)
-        // extended key length : 4 + 1 + 4 + 4 + 32 + (HARDENED! Private has zero-bite 1 + 32 || Public has 33) + 4
-        let shift = version.isPublic ? 0 : 1
-
         let data = Base58.decode(extendedKey)
+        try self.init(data: data)
+    }
+
+    public init(data: Data) throws  {
         guard data.count == HDExtendedKey.length else {
             throw ParsingError.wrongKeyLength
         }
+
+        let version = try HDExtendedKey.version(extendedKey: data)
 
         let derivedType = DerivedType(depth: data[4])
         guard derivedType != .bip32 else {
             throw ParsingError.wrongDerivedType
         }
 
-        let checksum: Data = data[78..<82]
-        guard Data(Crypto.doubleSha256(data[0..<78]).prefix(4)) == checksum else {
-            throw ParsingError.invalidChecksum
-        }
-
-        let depth: UInt8 = data[4]
-        let fingerprint: UInt32 = data[5..<9].hs.to(type: UInt32.self).bigEndian
-        let childIndex: UInt32 = data[9..<13].hs.to(type: UInt32.self).bigEndian
-        let chainCode: Data = data[13..<45]
-        // for private 45 byte = 0
-
-        let raw: Data = data[(45 + shift)..<78]
-
         if version.isPublic {
-            self = .public(key:
-                    HDPublicKey(
-                            raw: raw,
-                            chainCode: chainCode,
-                            xPubKey: version.rawValue,
-                            depth: depth,
-                            fingerprint: fingerprint,
-                            childIndex: childIndex)
-            )
+            let key = try HDPublicKey(extendedKey: data)
+            self = .public(key: key)
         } else {
-            self = .private(key:
-                    HDPrivateKey(
-                            privateKey: raw,
-                            chainCode: chainCode,
-                            xPrivKey: version.rawValue,
-                            depth: depth,
-                            fingerprint: fingerprint,
-                            childIndex: childIndex)
-            )
+            let key = try HDPrivateKey(extendedKey: data)
+            self = .private(key: key)
         }
     }
 
-    public var derivedType: DerivedType {
+    var hdKey: HDKey {
         switch self {
-        case .private(let key): return DerivedType(depth: key.depth)
-        case .public(let key): return DerivedType(depth: key.depth)
+        case .private(let key): return key
+        case .public(let key): return key
         }
     }
 
@@ -70,77 +45,47 @@ public enum HDExtendedKey {
 
 public extension HDExtendedKey {
 
-    var serialized: Data {
-        let type: UInt8
-        switch self {
-        case .private: type = 0
-        case .public: type = 1
-        }
+    var derivedType: DerivedType {
+        DerivedType(depth: hdKey.depth)
+    }
 
-        return Data([type]) + keyData
+    var serialized: Data {
+        hdKey.data
     }
 
     static func deserialize(data: Data) throws -> HDExtendedKey {
-        let lastIndex = HDExtendedKey.length + 1
-        guard data.count == lastIndex else {
-            throw ParsingError.wrongKeyLength
-        }
-
-        switch data[0] {
-        case 0: return try .private(key: HDPrivateKey(extendedKey: data[1..<lastIndex]))
-        case 1: return try .public(key: HDPublicKey(extendedKey: data[1..<lastIndex]))
-        default: throw ParsingError.wrongType
-        }
+        try HDExtendedKey(data: data)
     }
 
 }
 
 public extension HDExtendedKey {
 
-    var keyData: Data {
-        switch self {
-        case .private(let key): return key.data
-        case .public(let key): return key.data
-        }
-    }
-
     var info: KeyInfo {
-        let xKey: UInt32
-        let depth: UInt8
-
-        switch self {
-        case .private(let key):
-            xKey = key.xPrivKey
-            depth = key.depth
-        case .public(let key):
-            xKey = key.xPubKey
-            depth = key.depth
-        }
-
-        let version = HDExtendedKeyVersion(rawValue: xKey) ?? .xprv
-        return KeyInfo(purpose: version.purpose, coinType: version.coinType, derivedType: DerivedType(depth: depth))
+        let version = HDExtendedKeyVersion(rawValue: hdKey.version) ?? .xprv
+        return KeyInfo(purpose: version.purpose, coinType: version.coinType, derivedType: DerivedType(depth: hdKey.depth))
     }
 
-    static func version(extendedKey: String) throws -> HDExtendedKeyVersion {
-        let version = String(extendedKey.prefix(4))
-        guard let keyType = HDExtendedKeyVersion(string: version) else {
+    static func version(extendedKey: Data) throws -> HDExtendedKeyVersion {
+        let version = extendedKey.prefix(4).hs.to(type: UInt32.self).bigEndian
+        guard let keyType = HDExtendedKeyVersion(rawValue: version) else {
             throw ParsingError.wrongVersion
         }
 
         return keyType
     }
 
-    static func isValid(_ extendedKey: Data, isPublic: Bool) throws {
+    static func isValid(_ extendedKey: Data, isPublic: Bool? = nil) throws {
         guard extendedKey.count == HDExtendedKey.length else {
             throw ParsingError.wrongKeyLength
         }
 
-        guard let version = HDExtendedKeyVersion(rawValue: extendedKey.prefix(4).hs.to(type: UInt32.self).bigEndian),
-            version.isPublic == isPublic else {
+        let version = try version(extendedKey: extendedKey)
+        if let isPublic = isPublic, version.isPublic != isPublic  {
             throw ParsingError.wrongVersion
         }
 
-        let checksum: Data = extendedKey[79..<83]
+        let checksum: Data = extendedKey[78..<82]
         guard Data(Crypto.doubleSha256(extendedKey.prefix(78)).prefix(4)) == checksum else {
             throw ParsingError.invalidChecksum
         }

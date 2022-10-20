@@ -3,7 +3,7 @@ import Foundation
 public final class HDKeychain {
     let privateKey: HDPrivateKey
 
-    init(privateKey: HDPrivateKey) {
+    public init(privateKey: HDPrivateKey) {
         self.privateKey = privateKey
     }
 
