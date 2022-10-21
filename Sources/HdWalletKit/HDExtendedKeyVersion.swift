@@ -26,10 +26,7 @@ public enum HDExtendedKeyVersion: UInt32, CaseIterable {
             case .litecoin: self = isPrivate ? .Mtpv : .Mtub
             }
         case .bip84:
-            switch coinType {
-            case .bitcoin: self = isPrivate ? .zprv : .zpub
-            case .litecoin: throw ParsingError.wrongMnemonicDerivation
-            }
+            self = isPrivate ? .zprv : .zpub
         }
     }
 
@@ -92,10 +89,6 @@ public enum HDExtendedKeyVersion: UInt32, CaseIterable {
 }
 
 extension HDExtendedKeyVersion {
-
-    enum ParsingError: Error {
-        case wrongMnemonicDerivation
-    }
 
     public enum ExtendedKeyCoinType {
         case bitcoin
