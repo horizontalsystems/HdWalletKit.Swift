@@ -50,7 +50,7 @@ public class ReadOnlyHDWallet {
             throw ParseError.InvalidChecksum
         }
 
-        let hdPublicKey = HDPublicKey(raw: key, chainCode: chainCode, xPubKey: xPubKey, depth: depth, fingerprint: fingerprint, childIndex: childIndex)
+        let hdPublicKey = HDPublicKey(raw: key, chainCode: chainCode, version: xPubKey, depth: depth, fingerprint: fingerprint, childIndex: childIndex)
 
         return try Self.publicKeys(hdPublicKey: hdPublicKey, indices: indices, chain: chain)
     }

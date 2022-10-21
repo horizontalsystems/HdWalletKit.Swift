@@ -66,13 +66,6 @@ extension Data {
         return toReturn
     }
 
-    var uint32: UInt32 {
-        get {
-            let i32array = self.withUnsafeBytes { $0.load(as: UInt32.self) }
-            return i32array
-        }
-    }
-
 }
 
 extension UInt32 {
