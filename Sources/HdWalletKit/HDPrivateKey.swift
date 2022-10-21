@@ -117,7 +117,7 @@ public extension HDPrivateKey {
         }
 
         if (0x80000000 & firstIndex) != 0 && (0x80000000 & lastIndex) != 0 {
-            fatalError("invalid child index")
+            throw DerivationError.invalidChildIndex
         }
 
         let hdPubKey = publicKey()
@@ -136,6 +136,7 @@ public extension HDPrivateKey {
 public enum DerivationError: Error {
     case derivationFailed
     case invalidChildIndex
+    case invalidPath
     case invalidHmacToPoint
     case invalidRawToPoint
     case invalidCombinePoints

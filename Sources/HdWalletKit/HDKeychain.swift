@@ -48,7 +48,7 @@ public final class HDKeychain {
                 indexText = indexText.dropLast()
             }
             guard let index = UInt32(indexText) else {
-                fatalError("invalid path")
+                throw DerivationError.invalidPath
             }
             key = try key.derived(at: index, hardened: hardened)
         }
