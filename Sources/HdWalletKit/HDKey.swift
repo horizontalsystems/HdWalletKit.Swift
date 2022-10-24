@@ -7,12 +7,14 @@ public class HDKey {
     public let fingerprint: UInt32
     public let childIndex: UInt32
 
-    public let raw: Data
+    let _raw: Data
     public let chainCode: Data
+
+    open var raw: Data { _raw }
 
     public init(raw: Data, chainCode: Data, version: UInt32, depth: UInt8, fingerprint: UInt32, childIndex: UInt32) {
         self.version = version
-        self.raw = raw
+        self._raw = raw
         self.chainCode = chainCode
         self.depth = depth
         self.fingerprint = fingerprint
@@ -27,7 +29,7 @@ public class HDKey {
         fingerprint = extendedKey[5..<9].hs.to(type: UInt32.self).bigEndian
         childIndex = extendedKey[9..<12].hs.to(type: UInt32.self).bigEndian
         chainCode = extendedKey[13..<45]
-        raw = extendedKey[45..<78]
+        _raw = extendedKey[45..<78]
     }
 
 }
@@ -41,7 +43,7 @@ extension HDKey {
         data += fingerprint.bigEndian.data
         data += childIndex.bigEndian.data
         data += chainCode
-        data += raw
+        data += _raw
         let checksum = Crypto.doubleSha256(data).prefix(4)
         return data + checksum
     }
