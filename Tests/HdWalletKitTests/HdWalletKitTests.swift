@@ -22,7 +22,7 @@ class HDWalletKitTests: XCTestCase {
         let extended = try! hdWallet.privateKey(path: "m/49'/1'/0'").publicKey().extended()
         let k2 = try! ReadOnlyHDWallet.publicKeys(extendedPublicKey: extended, indices: 0..<5, chain: .external).first!
 
-        XCTAssertEqual(k.xPubKey, k2.xPubKey)
+        XCTAssertEqual(k.version, k2.version)
         XCTAssertEqual(k.depth, k2.depth)
         XCTAssertEqual(k.fingerprint, k2.fingerprint)
         XCTAssertEqual(k.childIndex, k2.childIndex)

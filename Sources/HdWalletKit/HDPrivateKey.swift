@@ -5,8 +5,8 @@ import secp256k1
 
 public class HDPrivateKey: HDKey {
 
-    var privateKey: Data {
-        raw.suffix(32) // first byte is 0x00
+    public override var raw: Data {
+        _raw.suffix(32) // first byte is 0x00
     }
 
     var extendedVersion: HDExtendedKeyVersion {
@@ -54,12 +54,12 @@ public extension HDPrivateKey {
             throw DerivationError.invalidChildIndex
         }
 
-        let publicKey = Crypto.publicKey(privateKey: privateKey, compressed: true)
+        let publicKey = Crypto.publicKey(privateKey: raw, compressed: true)
 
         var data = Data()
         if hardened {
             data += Data([0])
-            data += privateKey
+            data += raw
         } else {
             data += publicKey
         }
@@ -75,7 +75,7 @@ public extension HDPrivateKey {
             secp256k1_context_destroy(context)
         }
 
-        var rawVariable = privateKey
+        var rawVariable = raw
         if rawVariable.withUnsafeMutableBytes ({ privateKeyBytes -> Int32 in
             factor.withUnsafeBytes { factorBytes -> Int32 in
                 guard let factorPointer = factorBytes.bindMemory(to: UInt8.self).baseAddress else { return 0 }
@@ -103,7 +103,7 @@ public extension HDPrivateKey {
     }
 
     func publicKey(compressed: Bool = true) -> HDPublicKey {
-        HDPublicKey(raw: Crypto.publicKey(privateKey: privateKey, compressed: compressed),
+        HDPublicKey(raw: Crypto.publicKey(privateKey: raw, compressed: compressed),
                 chainCode: chainCode,
                 version: extendedVersion.pubKey.rawValue,
                 depth: depth,
