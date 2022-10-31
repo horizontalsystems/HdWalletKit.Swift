@@ -38,7 +38,6 @@ extension HDKey {
 
     var data: Data {
         var data = Data()
-        data += version.bigEndian.data
         data += Data([depth])
         data += fingerprint.bigEndian.data
         data += childIndex.bigEndian.data
@@ -52,8 +51,9 @@ extension HDKey {
 
 public extension HDKey {
 
-    func extended() -> String {
-        Base58.encode(data)
+    func extended(customVersion: HDExtendedKeyVersion? = nil) -> String {
+        let version = customVersion?.rawValue ??  version
+        return Base58.encode(version.bigEndian.data + data)
     }
 
     var description: String {
