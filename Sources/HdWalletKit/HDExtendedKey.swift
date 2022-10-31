@@ -48,7 +48,7 @@ public extension HDExtendedKey {
     }
 
     var serialized: Data {
-        hdKey.version.bigEndian.data + hdKey.data
+        hdKey.data()
     }
 
     static func deserialize(data: Data) throws -> HDExtendedKey {
