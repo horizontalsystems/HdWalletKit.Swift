@@ -27,8 +27,7 @@ public extension HDPublicKey {
         let hash = Crypto.ripeMd160Sha256(raw)
         let fingerprint = hash[0..<4].hs.to(type: UInt32.self)
 
-        let context = secp256k1_context_create(UInt32(SECP256K1_CONTEXT_SIGN|SECP256K1_CONTEXT_VERIFY))!
-
+        let context = secp256k1.Context.raw
         // Convert HMAC left side to Point, and combine with Parent PublicKey(Parent Point).
         var hmacPoint = secp256k1_pubkey()
         if hmacPrivateKey.withUnsafeBytes({ hmacPrivateKeyBytes -> Int32 in
@@ -51,7 +50,6 @@ public extension HDPublicKey {
         defer {
             pointers.deinitialize(count: 2)
             pointers.deallocate()
-            secp256k1_context_destroy(context)
         }
         storage.append(parentPoint)
         storage.append(hmacPoint)

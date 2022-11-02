@@ -70,10 +70,7 @@ public extension HDPrivateKey {
         let digest = Crypto.hmacSha512(data, key: chainCode)
         let factor = digest[0..<32]
 
-        let context = secp256k1_context_create(UInt32(SECP256K1_CONTEXT_SIGN|SECP256K1_CONTEXT_VERIFY))!
-        defer {
-            secp256k1_context_destroy(context)
-        }
+        let context = secp256k1.Context.raw
 
         var rawVariable = raw
         if rawVariable.withUnsafeMutableBytes ({ privateKeyBytes -> Int32 in
