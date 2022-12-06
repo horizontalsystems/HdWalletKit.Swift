@@ -76,9 +76,16 @@ public struct Mnemonic {
     }
 
     public static func seed(mnemonic m: [String], passphrase: String = "") -> Data? {
-        let mnemonic = m.joined(separator: " ")
+        let mnemonic = m.joined(separator: " ").decomposedStringWithCompatibilityMapping
         let salt = ("mnemonic" + passphrase).decomposedStringWithCompatibilityMapping.data(using: .utf8)!
         let seed = Crypto.deriveKey(password: mnemonic, salt: salt, iterations: 2048, keyLength: 64)
+        return seed
+    }
+
+    public static func seedNonStandard(mnemonic m: [String], passphrase: String = "") -> Data? {
+        let mnemonic = m.joined(separator: " ")
+        let salt = ("mnemonic" + passphrase).decomposedStringWithCompatibilityMapping.data(using: .utf8)!
+        let seed = Crypto.deriveKeyNonStandard(password: mnemonic, salt: salt, iterations: 2048, keyLength: 64)
         return seed
     }
 
@@ -169,4 +176,16 @@ public struct Mnemonic {
             return WordList.portuguese
         }
     }
+
+    public static func language(words: [String]) -> Mnemonic.Language? {
+        for language in Language.allCases {
+            do {
+                _ = try seedBits(words: words, list: wordList(for: language).map(String.init))
+                return language
+            } catch {}
+        }
+
+        return nil
+    }
+
 }

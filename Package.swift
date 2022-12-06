@@ -15,7 +15,7 @@ let package = Package(
     dependencies: [
         .package(url: "https://github.com/apple/swift-crypto.git", "1.0.0" ..< "3.0.0"),
         .package(url: "https://github.com/Boilertalk/secp256k1.swift.git", from: "0.1.0"),
-        .package(url: "https://github.com/horizontalsystems/HsCryptoKit.Swift.git", .upToNextMajor(from: "1.0.0")),
+        .package(url: "https://github.com/horizontalsystems/HsCryptoKit.Swift.git", from: "1.1.0"),
     ],
     targets: [
         .target(

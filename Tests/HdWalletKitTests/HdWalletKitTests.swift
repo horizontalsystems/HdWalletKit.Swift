@@ -50,5 +50,48 @@ class HDWalletKitTests: XCTestCase {
             XCTAssertEqual(p.raw, bp.raw)
         }
     }
+    
+    func testChineseMnemonicToSeed() {
+        let seed = Mnemonic.seed(mnemonic: "みすえる　ろれつ　げざい　かがく　けんすう　てんけん　つうか　ひさい　そんみん　せんたく　りそく　えいえん".wordsList)!
+        XCTAssertEqual(seed.hex, "38783fa1226a63555ac4c582e8fa5b4a354aad4867510fc61288a91e3cd602743f2940e784e786468fcd64e71d745113fc8301fe64544cfbd022f48df13e0549")
+    }
+    
+    let NFCEncodedWords = "superbe volume dénuder caribou donjon navire médaille réitérer instinct heureux ventouse barrage".wordsList
 
+    func testFrenchMnemonicToSeed() {
+        let seed = Mnemonic.seed(mnemonic: NFCEncodedWords)!
+        XCTAssertEqual(seed.hex, "0f018e4e329afbe1453cae154bd2666a7f57bc92fab055bd3591ce3d137ae1df6994c636590f10cbaa93caa17a83a7f4768f087ac9e5d31cd1a396e50841b3fc")
+    }
+
+    func testFrenchMnemonicToSeedNonStandard() {
+        let seed = Mnemonic.seedNonStandard(mnemonic: NFCEncodedWords)!
+        XCTAssertEqual(seed.hex, "8dadef68dcaca7d8ffaa0354a66a3fb8227ac3f756273233b8cf978f69c3942c683dc5327b08431e7df585d42d86070b2dbda2c290763ae268df9c8589fee97f")
+    }
+    
+    func testLanguageEnglish() {
+        let englishWords = "tonight wrestle dress clay empower permit obscure skirt lock key weasel boss".wordsList
+        XCTAssertEqual(Mnemonic.language(words: englishWords), Mnemonic.Language.english)
+    }
+    
+    func testLanguageChinese() {
+        let englishWords = "叙 玄 告 斗 充 售 岸 陵 床 零 邵 长".wordsList
+        XCTAssertEqual(Mnemonic.language(words: englishWords), Mnemonic.Language.simplifiedChinese)
+    }
+
+}
+
+extension Data {
+    
+    var hex: String {
+        self.reduce("") {$0 + String(format: "%02x", $1)}
+    }
+    
+}
+
+extension String {
+    
+    var wordsList: [String] {
+        self.split(separator: " ").map(String.init)
+    }
+    
 }
