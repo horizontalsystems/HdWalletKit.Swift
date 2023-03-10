@@ -13,7 +13,7 @@ class HDWalletKitTests: XCTestCase {
         XCTAssert(true, "Pass")
     }
 
-    func testPublicKeyInitializationFromExtendedPublicKeyString() {
+    func testPublicKeyInitializationFromBip49ExtendedPublicKeyString() {
         let words = try! Mnemonic.generate()
         let seed = Mnemonic.seed(mnemonic: words)!
         let hdWallet = HDWallet(seed: seed, coinType: 1, xPrivKey: HDExtendedKeyVersion.xprv.rawValue, purpose: .bip49)
@@ -22,6 +22,23 @@ class HDWalletKitTests: XCTestCase {
         let extended = try! hdWallet.privateKey(path: "m/49'/1'/0'").publicKey().extended()
         let k2 = try! ReadOnlyHDWallet.publicKeys(extendedPublicKey: extended, indices: 0..<5, chain: .external).first!
 
+        XCTAssertEqual(k.version, k2.version)
+        XCTAssertEqual(k.depth, k2.depth)
+        XCTAssertEqual(k.fingerprint, k2.fingerprint)
+        XCTAssertEqual(k.childIndex, k2.childIndex)
+        XCTAssertEqual(k.raw, k2.raw)
+        XCTAssertEqual(k.chainCode, k2.chainCode)
+    }
+
+    func testPublicKeyInitializationFromBip86ExtendedPublicKeyString() {
+        let words = try! Mnemonic.generate()
+        let seed = Mnemonic.seed(mnemonic: words)!
+        let hdWallet = HDWallet(seed: seed, coinType: 1, xPrivKey: HDExtendedKeyVersion.xprv.rawValue, purpose: .bip86)
+        
+        let k = try! hdWallet.publicKeys(account: 0, indices: 0..<1, chain: .external).first!
+        let extended = try! hdWallet.privateKey(path: "m/86'/1'/0'").publicKey().extended()
+        let k2 = try! ReadOnlyHDWallet.publicKeys(extendedPublicKey: extended, indices: 0..<5, chain: .external).first!
+        
         XCTAssertEqual(k.version, k2.version)
         XCTAssertEqual(k.depth, k2.depth)
         XCTAssertEqual(k.fingerprint, k2.fingerprint)
