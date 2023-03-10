@@ -27,6 +27,8 @@ public enum HDExtendedKeyVersion: UInt32, CaseIterable {
             }
         case .bip84:
             self = isPrivate ? .zprv : .zpub
+        case .bip86:
+            self = isPrivate ? .xprv : .xpub
         }
     }
 
@@ -50,14 +52,6 @@ public enum HDExtendedKeyVersion: UInt32, CaseIterable {
         case .Ltub: return "Ltub"
         case .Mtpv: return "Mtpv"
         case .Mtub: return "Mtub"
-        }
-    }
-
-    public var purpose: Purpose {
-        switch self {
-        case .xprv, .xpub, .Ltpv, .Ltub: return .bip44
-        case .yprv, .ypub, .Mtpv, .Mtub: return .bip49
-        case .zprv, .zpub: return .bip84
         }
     }
 

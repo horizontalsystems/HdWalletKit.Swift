@@ -59,11 +59,6 @@ public extension HDExtendedKey {
 
 public extension HDExtendedKey {
 
-    var info: KeyInfo {
-        let version = HDExtendedKeyVersion(rawValue: hdKey.version) ?? .xprv
-        return KeyInfo(purpose: version.purpose, coinType: version.coinType, derivedType: DerivedType(depth: hdKey.depth))
-    }
-
     static func version(extendedKey: Data) throws -> HDExtendedKeyVersion {
         let version = extendedKey.prefix(4).hs.to(type: UInt32.self).bigEndian
         guard let keyType = HDExtendedKeyVersion(rawValue: version) else {
@@ -118,12 +113,6 @@ public extension HDExtendedKey {
             default: self = .bip32
             }
         }
-    }
-
-    struct KeyInfo {
-        public let purpose: Purpose
-        public let coinType: HDExtendedKeyVersion.ExtendedKeyCoinType
-        public let derivedType: DerivedType
     }
 
     enum ParsingError: Error {
