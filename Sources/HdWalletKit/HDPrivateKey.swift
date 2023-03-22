@@ -80,7 +80,7 @@ public extension HDPrivateKey {
             factor.withUnsafeBytes { factorBytes -> Int32 in
                 guard let factorPointer = factorBytes.bindMemory(to: UInt8.self).baseAddress else { return 0 }
                 guard let privateKeyPointer = privateKeyBytes.baseAddress?.assumingMemoryBound(to: UInt8.self) else { return 0 }
-                return secp256k1_ec_privkey_tweak_add(context, privateKeyPointer, factorPointer)
+                return secp256k1_ec_seckey_tweak_add(context, privateKeyPointer, factorPointer)
             }
         }) == 0 {
             throw DerivationError.invalidCombineTweak
