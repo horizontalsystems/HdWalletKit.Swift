@@ -47,6 +47,16 @@ public extension HDExtendedKey {
         DerivedType(depth: hdKey.depth)
     }
 
+    var purposes: [Purpose] {
+        let version = HDExtendedKeyVersion(rawValue: hdKey.version) ?? .xprv
+        return version.purposes
+    }
+
+    var coinTypes: [HDExtendedKeyVersion.ExtendedKeyCoinType] {
+        let version = HDExtendedKeyVersion(rawValue: hdKey.version) ?? .xprv
+        return version.coinTypes
+    }
+
     var serialized: Data {
         hdKey.data()
     }

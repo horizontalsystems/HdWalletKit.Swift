@@ -55,10 +55,20 @@ public enum HDExtendedKeyVersion: UInt32, CaseIterable {
         }
     }
 
-    public var coinType: ExtendedKeyCoinType {
+    public var purposes: [Purpose] {
         switch self {
-        case .xprv, .xpub, .yprv, .ypub, .zprv, .zpub: return .bitcoin
-        case .Ltpv, .Ltub, .Mtpv, .Mtub: return .litecoin
+        case .xprv, .xpub: return [.bip44, .bip86]
+        case .Ltpv, .Ltub: return [.bip44]
+        case .yprv, .ypub, .Mtpv, .Mtub: return [.bip49]
+        case .zprv, .zpub: return [.bip84]
+        }
+    }
+
+    public var coinTypes: [ExtendedKeyCoinType] {
+        switch self {
+        case .xprv, .xpub, .zprv, .zpub: return [.bitcoin, .litecoin]
+        case .yprv, .ypub: return [.bitcoin]
+        case .Ltpv, .Ltub, .Mtpv, .Mtub: return [.litecoin]
         }
     }
 
