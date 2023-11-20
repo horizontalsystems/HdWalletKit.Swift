@@ -12,7 +12,7 @@ public class ReadOnlyHDWallet {
         data.withUnsafeBytes { $0.load(as: T.self) }
     }
 
-    public static func publicKeys(hdPublicKey: HDPublicKey, indices: Range<UInt32>, chain: HDWallet.Chain) throws -> [HDPublicKey] {
+    public static func publicKeys(hdPublicKey: HDPublicKey, indices: Range<UInt32>, chain: HDWallet.Chain, curve: DerivationCurve = .secp256k1) throws -> [HDPublicKey] {
         guard let firstIndex = indices.first, let lastIndex = indices.last else {
             return []
         }
@@ -31,7 +31,7 @@ public class ReadOnlyHDWallet {
         return keys
     }
 
-    public static func publicKeys(extendedPublicKey: String, indices: Range<UInt32>, chain: HDWallet.Chain) throws -> [HDPublicKey] {
+    public static func publicKeys(extendedPublicKey: String, indices: Range<UInt32>, chain: HDWallet.Chain, curve: DerivationCurve = .secp256k1) throws -> [HDPublicKey] {
         let data = Base58.decode(extendedPublicKey)
 
         guard data.count == 82 else {
