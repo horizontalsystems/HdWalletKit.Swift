@@ -1,14 +1,18 @@
 import Foundation
+import HsExtensions
+import HsCryptoKit
 
 public final class HDKeychain {
     let privateKey: HDPrivateKey
+    public let curve: DerivationCurve
 
-    public init(privateKey: HDPrivateKey) {
+    public init(privateKey: HDPrivateKey, curve: DerivationCurve = .secp256k1) {
         self.privateKey = privateKey
+        self.curve = curve
     }
 
-    public convenience init(seed: Data, xPrivKey: UInt32) {
-        self.init(privateKey: HDPrivateKey(seed: seed, xPrivKey: xPrivKey))
+    public convenience init(seed: Data, xPrivKey: UInt32, curve: DerivationCurve) {
+        self.init(privateKey: HDPrivateKey(seed: seed, xPrivKey: xPrivKey, salt: curve.bip32SeedSalt), curve: curve)
     }
 
     /// Parses the BIP32 path and derives the chain of keychains accordingly.
@@ -50,7 +54,7 @@ public final class HDKeychain {
             guard let index = UInt32(indexText) else {
                 throw DerivationError.invalidPath
             }
-            key = try key.derived(at: index, hardened: hardened)
+            key = try key.derived(at: index, hardened: hardened, curve: curve)
         }
         return key
     }

@@ -13,7 +13,7 @@ public enum HDExtendedKey {
         try self.init(data: data)
     }
 
-    public init(data: Data) throws  {
+    public init(data: Data, curve: DerivationCurve = .secp256k1) throws  {
         guard data.count == HDExtendedKey.length else {
             throw ParsingError.wrongKeyLength
         }

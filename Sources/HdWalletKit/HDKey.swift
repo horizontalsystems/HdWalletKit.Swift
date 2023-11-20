@@ -14,7 +14,7 @@ public class HDKey {
 
     public init(raw: Data, chainCode: Data, version: UInt32, depth: UInt8, fingerprint: UInt32, childIndex: UInt32) {
         self.version = version
-        self._raw = raw
+        _raw = raw
         self.chainCode = chainCode
         self.depth = depth
         self.fingerprint = fingerprint
