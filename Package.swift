@@ -6,6 +6,7 @@ let package = Package(
     name: "HdWalletKit",
     platforms: [
         .iOS(.v13),
+        .macOS(.v10_15)
     ],
     products: [
         .library(
@@ -14,7 +15,7 @@ let package = Package(
     ],
     dependencies: [
         .package(url: "https://github.com/apple/swift-crypto.git", "1.0.0" ..< "3.0.0"),
-        .package(url: "https://github.com/GigaBitcoin/secp256k1.swift.git", exact: .init(0, 10, 0)),
+        .package(url: "https://github.com/GigaBitcoin/secp256k1.swift.git", exact: .init(0, 12, 2)),
         .package(url: "https://github.com/horizontalsystems/HsCryptoKit.Swift.git", .upToNextMinor(from: "1.3.0")),
     ],
     targets: [
