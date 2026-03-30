@@ -2,16 +2,16 @@ import HsExtensions
 
 // https://github.com/satoshilabs/slips/blob/master/slip-0132.md
 public enum HDExtendedKeyVersion: UInt32, CaseIterable {
-    case xprv = 0x0488ade4
-    case xpub = 0x0488b21e
-    case yprv = 0x049d7878
-    case ypub = 0x049d7cb2
-    case zprv = 0x04b2430c
-    case zpub = 0x04b24746
-    case Ltpv = 0x019d9cfe
-    case Ltub = 0x019da462
-    case Mtpv = 0x01b26792
-    case Mtub = 0x01b26ef6
+    case xprv = 0x0488_ADE4
+    case xpub = 0x0488_B21E
+    case yprv = 0x049D_7878
+    case ypub = 0x049D_7CB2
+    case zprv = 0x04B2_430C
+    case zpub = 0x04B2_4746
+    case Ltpv = 0x019D_9CFE
+    case Ltub = 0x019D_A462
+    case Mtpv = 0x01B2_6792
+    case Mtub = 0x01B2_6EF6
 
     public init(purpose: Purpose, coinType: ExtendedKeyCoinType, isPrivate: Bool = true) throws {
         switch purpose {
@@ -89,14 +89,11 @@ public enum HDExtendedKeyVersion: UInt32, CaseIterable {
         default: return false
         }
     }
-
 }
 
-extension HDExtendedKeyVersion {
-
-    public enum ExtendedKeyCoinType {
+public extension HDExtendedKeyVersion {
+    enum ExtendedKeyCoinType {
         case bitcoin
         case litecoin
     }
-
 }

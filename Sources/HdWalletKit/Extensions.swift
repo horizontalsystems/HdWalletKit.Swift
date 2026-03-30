@@ -2,11 +2,10 @@ import Foundation
 import HsCryptoKit
 
 extension String {
-
     func pad(toSize: Int) -> String {
         guard count < toSize else { return self }
         var padded = self
-        for _ in 0..<(toSize - count) {
+        for _ in 0 ..< (toSize - count) {
             padded = "0" + padded
         }
         return padded
@@ -21,8 +20,8 @@ extension String {
         var data = Data(capacity: count)
 
         for i in 0 ..< count / length {
-            let startIdx = self.index(startIndex, offsetBy: i * length)
-            let subArray = self[startIdx ..< self.index(startIdx, offsetBy: length)]
+            let startIdx = index(startIndex, offsetBy: i * length)
+            let subArray = self[startIdx ..< index(startIdx, offsetBy: length)]
             let subString = String(subArray)
             guard let byte = UInt8(subString, radix: 2) else {
                 return nil
@@ -31,11 +30,9 @@ extension String {
         }
         return data
     }
-
 }
 
 extension UInt8 {
-
     func mnemonicBits() -> [String] {
         let totalBitsCount = MemoryLayout<UInt8>.size * 8
 
@@ -52,11 +49,9 @@ extension UInt8 {
 
         return bitsArray
     }
-
 }
 
 extension Data {
-
     func toBitArray() -> [String] {
         var toReturn = [String]()
         for num in [UInt8](self) {
@@ -65,14 +60,11 @@ extension Data {
 
         return toReturn
     }
-
 }
 
 extension UInt32 {
-
     var data: Data {
         var int = self
         return Data(bytes: &int, count: MemoryLayout<UInt32>.size)
     }
-
 }

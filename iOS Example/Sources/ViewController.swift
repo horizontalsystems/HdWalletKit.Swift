@@ -1,8 +1,7 @@
-import UIKit
 import HdWalletKit
+import UIKit
 
 class ViewController: UIViewController {
-
     override func viewDidLoad() {
         super.viewDidLoad()
 
@@ -30,21 +29,21 @@ class ViewController: UIViewController {
     }
 
     func generateAndCheckPublicKeys(privateKey: HDPrivateKey) throws {
-        for i in 0..<20 {
+        for i in 0 ..< 20 {
             print("================= \(i) ===================")
             let childKey = try privateKey.derived(at: UInt32(i), hardened: false)
 
             print("==> Private key: \(childKey.raw.hs.hex)")
             print("==> Public key: \(childKey.publicKey(compressed: true).description)")
             let pubKey = privateKey.publicKey()
-            print("==> DerivedPublic key: \(try pubKey.derived(at: UInt32(i)).description)")
+            try print("==> DerivedPublic key: \(pubKey.derived(at: UInt32(i)).description)")
         }
     }
 
     func derivedNonHardenedPublicKeys(privateKey: HDPrivateKey) throws {
         do {
-            let keys = try privateKey.derivedNonHardenedPublicKeys(at: 0..<5)
-            keys.enumerated().forEach { index, key in
+            let keys = try privateKey.derivedNonHardenedPublicKeys(at: 0 ..< 5)
+            for (index, key) in keys.enumerated() {
                 print("==> \(index) ==> Public key: \(key.description)")
             }
         } catch {
@@ -52,5 +51,4 @@ class ViewController: UIViewController {
             return
         }
     }
-
 }

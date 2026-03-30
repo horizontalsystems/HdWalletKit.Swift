@@ -1,8 +1,7 @@
 import Foundation
 import HsCryptoKit
 
-public struct Mnemonic {
-
+public enum Mnemonic {
     public enum WordCount: Int, CaseIterable {
         case twelve = 12
         case fifteen = 15
@@ -11,13 +10,12 @@ public struct Mnemonic {
         case twentyFour = 24
 
         var bitLength: Int {
-            self.rawValue / 3 * 32
+            rawValue / 3 * 32
         }
 
         var checksumLength: Int {
-            self.rawValue / 3
+            rawValue / 3
         }
-
     }
 
     public enum Language: CaseIterable {
@@ -39,7 +37,7 @@ public struct Mnemonic {
         case invalidChecksum
     }
 
-    enum MnemonicError : Error {
+    enum MnemonicError: Error {
         case randomBytesError
     }
 
@@ -55,21 +53,21 @@ public struct Mnemonic {
         return generate(entropy: bytes, language: language)
     }
 
-    private static func generate(entropy : Data, language: Language = .english) -> [String] {
+    public static func generate(entropy: Data, language: Language = .english) -> [String] {
         let list = wordList(for: language)
-        var bin = String(entropy.flatMap { ("00000000" + String($0, radix:2)).suffix(8) })
+        var bin = String(entropy.flatMap { ("00000000" + String($0, radix: 2)).suffix(8) })
 
         let hash = Crypto.sha256(entropy)
         let bits = entropy.count * 8
         let cs = bits / 32
 
-        let hashbits = String(hash.flatMap { ("00000000" + String($0, radix:2)).suffix(8) })
+        let hashbits = String(hash.flatMap { ("00000000" + String($0, radix: 2)).suffix(8) })
         let checksum = String(hashbits.prefix(cs))
         bin += checksum
 
         var mnemonic = [String]()
-        for i in 0..<(bin.count / 11) {
-            let wi = Int(bin[bin.index(bin.startIndex, offsetBy: i * 11)..<bin.index(bin.startIndex, offsetBy: (i + 1) * 11)], radix: 2)!
+        for i in 0 ..< (bin.count / 11) {
+            let wi = Int(bin[bin.index(bin.startIndex, offsetBy: i * 11) ..< bin.index(bin.startIndex, offsetBy: (i + 1) * 11)], radix: 2)!
             mnemonic.append(String(list[wi]))
         }
         return mnemonic
@@ -91,12 +89,12 @@ public struct Mnemonic {
 
     private static func seedBits(words: [String], list: [String]) throws -> String {
         var seedBits = ""
-        try words.enumerated().forEach { (index, word) in
-            guard let index = list.firstIndex(of: word) else {
+        try words.enumerated().forEach { index, word in
+            guard let listIndex = list.firstIndex(of: word) else {
                 throw ValidationError.invalidWord(index: index)
             }
 
-            let binaryString = String(index, radix: 2).pad(toSize: 11)
+            let binaryString = String(listIndex, radix: 2).pad(toSize: 11)
 
             seedBits.append(contentsOf: binaryString)
         }
@@ -104,7 +102,7 @@ public struct Mnemonic {
     }
 
     private static func seedBitsForLanguage(words: [String]) throws -> String {
-        var wrongWordIndex: Int = 0
+        var wrongWordIndex = 0
 
         for language in (Language.allCases.map { wordList(for: $0).map(String.init) }) {
             do {
@@ -187,5 +185,4 @@ public struct Mnemonic {
 
         return nil
     }
-
 }
