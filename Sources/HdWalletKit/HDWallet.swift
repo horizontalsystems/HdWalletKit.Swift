@@ -43,9 +43,8 @@ public class HDWallet {
         try keychain.derivedNonHardenedPublicKeys(path: "m/\(purpose)'/\(coinType)'/\(account)'/\(chain.rawValue)", indices: indices)
     }
 
-    public enum Chain : Int {
+    public enum Chain: Int {
         case external
         case `internal`
     }
-
 }

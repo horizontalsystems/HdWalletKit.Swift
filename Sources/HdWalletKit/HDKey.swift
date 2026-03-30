@@ -26,16 +26,14 @@ public class HDKey {
         version = extendedKey.prefix(4).hs.to(type: UInt32.self).bigEndian
 
         depth = extendedKey[4]
-        fingerprint = extendedKey[5..<9].hs.to(type: UInt32.self).bigEndian
-        childIndex = extendedKey[9..<12].hs.to(type: UInt32.self).bigEndian
-        chainCode = extendedKey[13..<45]
-        _raw = extendedKey[45..<78]
+        fingerprint = extendedKey[5 ..< 9].hs.to(type: UInt32.self).bigEndian
+        childIndex = extendedKey[9 ..< 12].hs.to(type: UInt32.self).bigEndian
+        chainCode = extendedKey[13 ..< 45]
+        _raw = extendedKey[45 ..< 78]
     }
-
 }
 
 extension HDKey {
-
     func data(version: UInt32? = nil) -> Data {
         var data = Data()
         data += (version ?? self.version).bigEndian.data
@@ -47,18 +45,15 @@ extension HDKey {
         let checksum = Crypto.doubleSha256(data).prefix(4)
         return data + checksum
     }
-
 }
 
 public extension HDKey {
-
     func extended(customVersion: HDExtendedKeyVersion? = nil) -> String {
-        let version = customVersion?.rawValue ??  version
+        let version = customVersion?.rawValue ?? version
         return Base58.encode(data(version: version))
     }
 
     var description: String {
         "\(raw.hs.hex) ::: \(chainCode.hs.hex) ::: depth: \(depth) - fingerprint: \(fingerprint) - childIndex: \(childIndex)"
     }
-
 }

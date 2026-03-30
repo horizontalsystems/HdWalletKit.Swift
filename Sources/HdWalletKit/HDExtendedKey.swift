@@ -13,7 +13,7 @@ public enum HDExtendedKey {
         try self.init(data: data)
     }
 
-    public init(data: Data, curve: DerivationCurve = .secp256k1) throws  {
+    public init(data: Data, curve _: DerivationCurve = .secp256k1) throws {
         guard data.count == HDExtendedKey.length else {
             throw ParsingError.wrongKeyLength
         }
@@ -26,23 +26,21 @@ public enum HDExtendedKey {
         }
 
         if version.isPublic {
-            self = .public(key: try HDPublicKey(extendedKey: data))
+            self = try .public(key: HDPublicKey(extendedKey: data))
         } else {
-            self = .private(key: try HDPrivateKey(extendedKey: data))
+            self = try .private(key: HDPrivateKey(extendedKey: data))
         }
     }
 
     var hdKey: HDKey {
         switch self {
-        case .private(let key): return key
-        case .public(let key): return key
+        case let .private(key): return key
+        case let .public(key): return key
         }
     }
-
 }
 
 public extension HDExtendedKey {
-
     var derivedType: DerivedType {
         DerivedType(depth: hdKey.depth)
     }
@@ -64,11 +62,9 @@ public extension HDExtendedKey {
     static func deserialize(data: Data) throws -> HDExtendedKey {
         try HDExtendedKey(data: data)
     }
-
 }
 
 public extension HDExtendedKey {
-
     static func version(extendedKey: Data) throws -> HDExtendedKeyVersion {
         let version = extendedKey.prefix(4).hs.to(type: UInt32.self).bigEndian
         guard let keyType = HDExtendedKeyVersion(rawValue: version) else {
@@ -84,33 +80,29 @@ public extension HDExtendedKey {
         }
 
         let version = try version(extendedKey: extendedKey)
-        if let isPublic = isPublic, version.isPublic != isPublic  {
+        if let isPublic = isPublic, version.isPublic != isPublic {
             throw ParsingError.wrongVersion
         }
 
-        let checksum: Data = extendedKey[78..<82]
+        let checksum: Data = extendedKey[78 ..< 82]
         guard Data(Crypto.doubleSha256(extendedKey.prefix(78)).prefix(4)) == checksum else {
             throw ParsingError.invalidChecksum
         }
     }
-
 }
 
 extension HDExtendedKey: Equatable, Hashable {
-
     public func hash(into hasher: inout Hasher) {
         hasher.combine(serialized)
     }
 
-    public static func ==(lhs: HDExtendedKey, rhs: HDExtendedKey) -> Bool {
+    public static func == (lhs: HDExtendedKey, rhs: HDExtendedKey) -> Bool {
         lhs.serialized == rhs.serialized
     }
-
 }
 
 public extension HDExtendedKey {
-
-    //master key depth == 0, account depth = "m/purpose'/coin_type'/account'" = 3, all others is custom
+    // master key depth == 0, account depth = "m/purpose'/coin_type'/account'" = 3, all others is custom
     enum DerivedType {
         case bip32
         case master
@@ -132,5 +124,4 @@ public extension HDExtendedKey {
         case wrongDerivedType
         case invalidChecksum
     }
-
 }

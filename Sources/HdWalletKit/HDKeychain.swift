@@ -1,6 +1,6 @@
 import Foundation
-import HsExtensions
 import HsCryptoKit
+import HsExtensions
 
 public final class HDKeychain {
     let privateKey: HDPrivateKey
@@ -68,5 +68,4 @@ public final class HDKeychain {
 
         return try key.derivedNonHardenedPublicKeys(at: indices)
     }
-
 }

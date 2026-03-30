@@ -5,9 +5,8 @@ import secp256k1
 public class HDPublicKey: HDKey {}
 
 public extension HDPublicKey {
-
     func derived(at index: UInt32) throws -> HDPublicKey {
-        let edge: UInt32 = 0x80000000
+        let edge: UInt32 = 0x8000_0000
         guard (edge & index) == 0 else {
             throw DerivationError.invalidChildIndex
         }
@@ -21,13 +20,13 @@ public extension HDPublicKey {
         // Get HMAC result for (Parent + Index) and ChainCode
         let digest = Crypto.hmacSha512(data, key: chainCode)
 
-        let hmacPrivateKey = digest[0..<32]
-        let derivedChainCode = digest[32..<64]
+        let hmacPrivateKey = digest[0 ..< 32]
+        let derivedChainCode = digest[32 ..< 64]
 
         let hash = Crypto.ripeMd160Sha256(raw)
-        let fingerprint = hash[0..<4].hs.to(type: UInt32.self)
+        let fingerprint = hash[0 ..< 4].hs.to(type: UInt32.self)
 
-        let context = secp256k1_context_create(UInt32(SECP256K1_CONTEXT_SIGN|SECP256K1_CONTEXT_VERIFY))!
+        let context = secp256k1_context_create(UInt32(SECP256K1_CONTEXT_SIGN | SECP256K1_CONTEXT_VERIFY))!
 
         // Convert HMAC left side to Point, and combine with Parent PublicKey(Parent Point).
         var hmacPoint = secp256k1_pubkey()
@@ -47,7 +46,7 @@ public extension HDPublicKey {
         }
 
         var storage = ContiguousArray<secp256k1_pubkey>()
-        let pointers = UnsafeMutablePointer< UnsafePointer<secp256k1_pubkey>? >.allocate(capacity: 2)
+        let pointers = UnsafeMutablePointer<UnsafePointer<secp256k1_pubkey>?>.allocate(capacity: 2)
         defer {
             pointers.deinitialize(count: 2)
             pointers.deallocate()
@@ -57,7 +56,7 @@ public extension HDPublicKey {
         storage.append(hmacPoint)
 
         for i in 0 ..< 2 {
-            withUnsafePointer(to: &storage[i]) { (ptr) -> Void in
+            withUnsafePointer(to: &storage[i]) { ptr in
                 pointers.advanced(by: i).pointee = ptr
             }
         }
@@ -74,13 +73,12 @@ public extension HDPublicKey {
         let childPublicKey = Crypto.publicKey(publicKey, compressed: true)
 
         return HDPublicKey(
-                raw: childPublicKey,
-                chainCode: derivedChainCode,
-                version: version,
-                depth: depth + 1,
-                fingerprint: fingerprint,
-                childIndex: derivingIndex
+            raw: childPublicKey,
+            chainCode: derivedChainCode,
+            version: version,
+            depth: depth + 1,
+            fingerprint: fingerprint,
+            childIndex: derivingIndex
         )
     }
-
 }

@@ -10,7 +10,8 @@ let package = Package(
     products: [
         .library(
             name: "HdWalletKit",
-            targets: ["HdWalletKit"]),
+            targets: ["HdWalletKit"]
+        ),
     ],
     dependencies: [
         .package(url: "https://github.com/apple/swift-crypto.git", "1.0.0" ..< "3.0.0"),
@@ -25,11 +26,13 @@ let package = Package(
                 .product(name: "_CryptoExtras", package: "swift-crypto"),
                 .product(name: "secp256k1", package: "secp256k1.swift"),
                 .product(name: "HsCryptoKit", package: "HsCryptoKit.Swift"),
-            ]),
+            ]
+        ),
         .testTarget(
             name: "HdWalletKitTests",
             dependencies: [
-                "HdWalletKit"
-            ]),
+                "HdWalletKit",
+            ]
+        ),
     ]
 )

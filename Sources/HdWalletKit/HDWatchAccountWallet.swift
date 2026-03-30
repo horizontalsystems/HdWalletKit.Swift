@@ -7,7 +7,6 @@ public class HDWatchAccountWallet {
         self.publicKey = publicKey
     }
 
-
     public func publicKey(index: Int, chain: Chain) throws -> HDPublicKey {
         try publicKey.derived(at: UInt32(chain.rawValue)).derived(at: UInt32(index))
     }
@@ -17,7 +16,7 @@ public class HDWatchAccountWallet {
             return []
         }
 
-        if (0x80000000 & firstIndex) != 0 && (0x80000000 & lastIndex) != 0 {
+        if (0x8000_0000 & firstIndex) != 0, (0x8000_0000 & lastIndex) != 0 {
             throw DerivationError.invalidChildIndex
         }
 
@@ -25,15 +24,14 @@ public class HDWatchAccountWallet {
 
         var keys = [HDPublicKey]()
         for i in indices {
-            keys.append(try derivedHdKey.derived(at: i))
+            try keys.append(derivedHdKey.derived(at: i))
         }
 
         return keys
     }
 
-    public enum Chain : Int {
+    public enum Chain: Int {
         case external
         case `internal`
     }
-
 }
